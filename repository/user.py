@@ -6,6 +6,7 @@ class UserRepository:
         self.seen=set()
 
     def add_user(self,user):
+        #print("addd",user)
         self.session.add(user)
         self.seen.add(user)
 
@@ -16,5 +17,16 @@ class UserRepository:
         
         return self.session.query(User).filter(User.id==id).first()
 
-    def get_user_by_username(self,username):
+    def get_user_by_username1(self,username):
         return self.session.query(User).filter(User.username==username).first()
+
+    def get_user_by_username(self, username):
+        print("LOOKING FOR:", username)
+
+        user = self.session.query(User).filter(
+        User.username == username
+    ).first()
+
+        print("FOUND:", user)
+
+        return user

@@ -10,7 +10,7 @@ Message=Union[Command,Event]
 
 
 COMMANDS={
-    RegisterUser:create_user
+    RegisterUser:create_user,
 }
 
 EVENTS={

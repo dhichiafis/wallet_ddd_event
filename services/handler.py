@@ -22,8 +22,23 @@ def create_user(user,uow):
             )
             #raising an event
         try:
-            uow.userrepo.create_user(new_user)
-            uow.commit()
+            uow.userrepo.add_user(new_user)
+            #uow.commit()
             return {'message':'user created '}
         except Exception as e:
             return str(e)
+
+
+def login_user(db,form_data):
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+            data={"sub": user.username}, expires_delta=access_token_expires
+        )
+    return Token(access_token=access_token, token_type="bearer")

@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from models.domain import *
 from sqlalchemy import Table,Column,Integer,Boolean,String,DateTime,Numeric
 
-url='sqlite:///first1.db'
+url='sqlite:///first21.db'
 engine=create_engine(url=url)
 registry=registry()
 
