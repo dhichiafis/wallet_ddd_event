@@ -12,12 +12,15 @@ Message=Union[Command,Event]
 
 COMMANDS={
     RegisterUser:create_user,
-    CreateWallet:create_wallet_handler
+    CreateWallet:create_wallet_handler,
+    DepositToWallet:deposit_to_wallet_handler,
+    WithdrawFromWallet:withdraw_from_wallet_handler
 }
 
 EVENTS={
     UserCreated:[],
-    WalletCreated:[send_message]
+    WalletCreated:[send_message],
+    TransactionCreated:[],
 }
 
 def handle(message:Message,uow:UnitOfWork):
