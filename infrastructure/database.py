@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from models.domain import *
 from sqlalchemy import Table,Column,Integer,Boolean,String,DateTime,Numeric
 
-url='sqlite:///first21.db'
+url='sqlite:///first21346.db'
 engine=create_engine(url=url)
 registry=registry()
 
@@ -23,6 +23,16 @@ user_table=Table(
         Column('created_at',DateTime),
         Column('updated_at',DateTime)  
 )
+wallet_table = Table(
+    "wallets",
+    registry.metadata,
+
+    Column("id", Integer, primary_key=True),
+    Column("user_id", Integer, nullable=False),
+    Column("balance", Numeric, nullable=False),
+    Column("pin", String, nullable=False),
+    Column("created_at", DateTime)
+)
 #wallet_table=Table(
  #   'wallets',
   #  registry.metadata,
@@ -32,7 +42,7 @@ user_table=Table(
 
 
 registry.map_imperatively(User,user_table)
-#registry.map_imperatively(Wallet,wallet_table)
+registry.map_imperatively(Wallet,wallet_table)
 registry.metadata.create_all(bind=engine)
 
 

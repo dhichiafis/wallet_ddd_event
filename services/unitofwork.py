@@ -31,4 +31,4 @@ class UnitOfWork:
         for repo in [self.userrepo,self.walletrepo]:
             for aggregate in repo.seen:
                 while aggregate.events:
-                    yield aggregate.pop(0)
+                    yield aggregate.events.pop(0)

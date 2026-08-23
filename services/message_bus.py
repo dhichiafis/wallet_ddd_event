@@ -1,7 +1,8 @@
 from typing import List,Union
 from models.event import *
 from models.command import *
-from services.handler import *
+from services.user_handler import *
+from services.wallet_handler import *
 from services.unitofwork import *
 
 Message=Union[Command,Event]
@@ -11,10 +12,12 @@ Message=Union[Command,Event]
 
 COMMANDS={
     RegisterUser:create_user,
+    CreateWallet:create_wallet_handler
 }
 
 EVENTS={
-    UserCreated:[]
+    UserCreated:[],
+    WalletCreated:[send_message]
 }
 
 def handle(message:Message,uow:UnitOfWork):
@@ -22,9 +25,10 @@ def handle(message:Message,uow:UnitOfWork):
     queue=[message]
     
     while queue:
-        message=queue.pop[0]
+        message=queue.pop(0)
         if isinstance(message,Command):
-            handle_command(command=message,queue=queue,uow=uow)
+            resultCommand=handle_command(command=message,queue=queue,uow=uow)
+            result.append(resultCommand)
         elif isinstance(message,Event):
             handle_events(event=message,queue=queue,uow=uow)
         

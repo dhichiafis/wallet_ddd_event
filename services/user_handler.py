@@ -42,3 +42,9 @@ def login_user(db,form_data):
             data={"sub": user.username}, expires_delta=access_token_expires
         )
     return Token(access_token=access_token, token_type="bearer")
+
+
+def get_all_users_handler(uow):
+    with uow as uow:
+        users=uow.userrepo.get_all_users()
+        return [{'id':user.id,'username':user.username}for user in users]

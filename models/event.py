@@ -13,7 +13,8 @@ class UserCreated(Event):
 
 
 class WalletCreated(Event):
+    #user_id:int 
     balance:float 
     pin:int 
     created_at:datetime
-    updated_at:datetime 
+    #updated_at:datetime 
