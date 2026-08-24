@@ -62,11 +62,52 @@ def withdraw_from_wallet_handler(wallet,uow):
 
 def tranfer_to_wallet_handler(wallet,uow):
     with uow as uow:
-        pass 
+        fromwallet=uow.walletrepo.get_wallet_by_user_id(user_id=wallet.user_id)
+        fromwallet.withdraw(amount=wallet.amount)
+        to_wallet = uow.walletrepo.get_wallet_by_id(
+            wallet_id=wallet.to_wallet
+        )
+        to_wallet.deposit(amount=wallet.amount)
+        new_tranfer=Transfer(id=None,from_wallet=fromwallet.id,
+                             to_wallet=to_wallet.id
+                             ,amount=wallet.amount,status='pending',created_at=datetime.now(ZoneInfo('Africa/Nairobi')))
+        uow.transferrepo.add_transfer(new_tranfer)
 
+        #  Create source transaction
+        withdrawal_transaction = Transaction(
+            transaction_id=None,
+            wallet_id=fromwallet.id,
+            type="transfer_out",
+            description=f"Transfer to wallet {to_wallet.id}",
+            amount=wallet.amount,
+            created_at=datetime.now(
+                ZoneInfo("Africa/Nairobi")
+            )
+        )
+
+        uow.transrepo.create_transaction(
+            withdrawal_transaction
+        )
+        deposit_transaction = Transaction(
+            transaction_id=None,
+            wallet_id=to_wallet.id,
+            type="transfer_in",
+            description=f"Transfer from wallet {fromwallet.id}",
+            amount=wallet.amount,
+            created_at=datetime.now(
+                ZoneInfo("Africa/Nairobi")
+            )
+        )
+
+        uow.transrepo.create_transaction(
+            deposit_transaction
+        )
+
+        return {'message':f'you have successfully tranfered money to wallet {wallet.to_wallet}'}
 def get_wallet_statements(wallet,uow):
     with uow as uow:
-        statements=uow.transrepo.get_
+        pass 
+        #statements=uow.transrepo.get_
 def send_message(wallet,uow):
     print('messag is that your have created your wallet')
     print('this is it with balance',wallet.balance)

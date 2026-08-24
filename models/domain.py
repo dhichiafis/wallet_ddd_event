@@ -48,7 +48,7 @@ class Wallet:
         if self.balance<amount:
             raise ValueError('you have insufficient balance')
         self.balance-=amount 
-        
+
     def deposit(self,amount):
         if amount<50:
             raise ValueError('you must deposit more than 50 shillings')
@@ -56,16 +56,27 @@ class Wallet:
 
 
 class Transfer():
-    def __init__(self):
-        self.id 
-        self.from_wallet 
-        self.to_wallet 
-        self.amount 
-        self.status 
-        self.created_at 
+    def __init__(self,id,from_wallet,to_wallet,amount,
+                status,created_at):
+        self.id =id
+        self.from_wallet =from_wallet
+        self.to_wallet =to_wallet
+        self.amount =amount
+        self.status =status
+        self.created_at =created_at
         self.events=[]
-
-
+        '''
+        self.events.append(
+                    CreateTransfer(
+                        from_wallet=self.from_wallet,
+                        to_wallet=self.to_wallet,
+                        amount=self.amount,
+                        status=self.status,
+                        created_at=self.created_at
+                    )
+                )
+        
+        '''
 class Transaction:
     def __init__(self,transaction_id,wallet_id,type,description,amount,created_at):
         self.transaction_id=transaction_id

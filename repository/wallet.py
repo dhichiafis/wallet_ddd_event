@@ -12,8 +12,8 @@ class WalletRepository():
     def get_all_wallets(self):
         return self.session.query(Wallet).all()
 
-    def get_wallet_by_id(self):
-        return self.session.query(Wallet).filter(Wallet.id==id).first()
+    def get_wallet_by_id(self,wallet_id):
+        return self.session.query(Wallet).filter(Wallet.id==wallet_id).first()
 
     def get_wallet_by_user_id(self,user_id):
         return self.session.query(Wallet).filter(Wallet.user_id==user_id).first()

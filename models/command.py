@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 from decimal import Decimal
 class Command(BaseModel):
@@ -50,3 +51,19 @@ class WithdrawFromWallet(Command):
 
 class GetStatement(Command):
     wallet_id:int 
+
+class CreateTranferRequest(Command):
+    #from_wallet:int 
+    to_wallet:int 
+    amount:Decimal
+    #status:str 
+    #created_at:datetime 
+
+
+class CreateTransfer(Command):
+    user_id:int
+    #from_wallet:int
+    to_wallet:int 
+    amount:Decimal
+    #status:str
+    #created_at:datetime 

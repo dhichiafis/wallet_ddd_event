@@ -1,3 +1,4 @@
+from repository.transfer import *
 from repository.user import *
 from repository.wallet import *
 from repository.transaction import *
@@ -11,6 +12,7 @@ class UnitOfWork:
         self.userrepo=None 
         self.walletrepo=None 
         self.transrepo=None
+        self.transferrepo=None 
         self.ledgeraccrepo=None 
         self.journalentrepo=None 
 
@@ -21,6 +23,7 @@ class UnitOfWork:
         self.transrepo=TransactionRepository(session=self.session)
         self.ledgeraccrepo=LedgerAccountRepository(session=self.session)
         self.journalentrepo=JournalEntryRepository(session=self.session)
+        self.transferrepo=TransferRepository(session=self.session)
         return self 
 
     def __exit__(self,exc_type, exc_value, traceback):
@@ -39,7 +42,7 @@ class UnitOfWork:
     def collect_events(self):
         for repo in [self.userrepo,
                     self.walletrepo,self.transrepo,
-                    self.ledgeraccrepo,self.journalentrepo]:
+                    self.ledgeraccrepo,self.journalentrepo,self.transferrepo]:
             for aggregate in repo.seen:
                 while aggregate.events:
                     yield aggregate.events.pop(0)

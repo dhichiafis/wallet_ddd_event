@@ -38,9 +38,18 @@ async def deposit_to_wallet(
 
 @wallet_router.post('/transfer')
 async def transfer_to_wallet(
+    payload:CreateTranferRequest,
     user:User=Depends(get_current_active_user)
 ):
-    pass 
+    uow=UnitOfWork()
+    command=CreateTransfer(
+        user_id=user.id,
+        #from_wallet=payload.from_wallet,
+        to_wallet=payload.to_wallet,
+        amount=payload.amount,
+        #created_at=payload.created_at
+    )
+    return handle(command,uow)
 
 @wallet_router.post('/withdraw')
 async def withdraw_from_wallet(
@@ -75,6 +84,15 @@ async def get_statements(
         'amount':wallet.amount,
         'created_at':wallet.created_at
     }for wallet in statements]
+
+
 @wallet_router.get('/all')
-async def get_all_wallets():
-    pass 
+async def get_all_wallets(
+    db:Session=Depends(connect)
+):
+    wallets=db.query(Wallet).all()
+    return [{
+        'id':wallet.id,
+        'balance':wallet.balance,
+        'created_at':wallet.created_at
+    }for wallet in wallets]
