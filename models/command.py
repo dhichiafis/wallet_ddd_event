@@ -17,7 +17,8 @@ class LoginUser(Command):
     pass 
 
 
-
+class GetAllUser(Command):
+    pass 
 class CreateWalletRequest(Command):
     balance:Decimal 
     pin:int 

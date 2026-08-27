@@ -15,7 +15,8 @@ COMMANDS={
     CreateWallet:create_wallet_handler,
     DepositToWallet:deposit_to_wallet_handler,
     WithdrawFromWallet:withdraw_from_wallet_handler,
-    CreateTransfer:tranfer_to_wallet_handler
+    CreateTransfer:tranfer_to_wallet_handler,
+    GetAllUser:get_all_users_handler,
 }
 
 EVENTS={

@@ -1,14 +1,16 @@
-from fastapi  import APIRouter,Depends,status,HTTPException
+from fastapi  import APIRouter,Depends,status,HTTPException,Request
 from models.command import *
 from services.wallet_handler import *
 from services.unitofwork import *
 from services.message_bus import *
 from security import *
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
+from infrastructure.rate_limiter import *
 wallet_router=APIRouter(
     prefix='/wallet',
     tags=['wallet']
 )
-
 
 @wallet_router.post('/new')
 async def create_wallet(
@@ -37,7 +39,9 @@ async def deposit_to_wallet(
     return handle(message=command,uow=uow)
 
 @wallet_router.post('/transfer')
+@limiter.limit("3/minute")
 async def transfer_to_wallet(
+    request:Request,
     payload:CreateTranferRequest,
     user:User=Depends(get_current_active_user)
 ):

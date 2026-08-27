@@ -6,8 +6,9 @@ from sqlalchemy import create_engine
 from models.domain import *
 from sqlalchemy import Table,Column,Integer,ForeignKey,Boolean,String,DateTime,Numeric
 
-url='sqlite:///first2134uy6uuii.db'
-engine=create_engine(url=url)
+devurl='sqlite:///first2134uy6uuii.db'
+db_url="postgresql+psycopg2://neondb_owner:npg_tU0WwpSaH5Oo@ep-tiny-band-axur8h43-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+engine=create_engine(url=db_url)
 registry=registry()
 
 SessionFactory=sessionmaker(bind=engine,autoflush=False,autocommit=False)
@@ -23,6 +24,10 @@ user_table=Table(
         Column('created_at',DateTime),
         Column('updated_at',DateTime)  
 )
+
+
+
+
 wallet_table = Table(
     "wallets",
     registry.metadata,
@@ -166,7 +171,7 @@ registry.map_imperatively(
     Transfer,
     transfer_table
 )
-registry.map_imperatively(User,user_table)
+
 #registry.map_imperatively(Wallet,wallet_table)
 registry.map_imperatively(
     Wallet,
@@ -178,7 +183,12 @@ registry.map_imperatively(
         )
     }
 )
-registry.metadata.create_all(bind=engine)
+#registry.metadata.create_all(bind=engine)
+
+
+
+
+registry.map_imperatively(User,user_table)
 
 
 def connect():
