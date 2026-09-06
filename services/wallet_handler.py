@@ -3,6 +3,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
+from payments import *
 def create_wallet_handler(wallet,uow):
     with uow as uow:
         new_wallet=Wallet(
@@ -16,6 +17,7 @@ def create_wallet_handler(wallet,uow):
         uow.walletrepo.add_wallet(new_wallet)
         return {'message':"wallet created successfully"}
 
+#this method has to invoke the stk push 
 def deposit_to_wallet_handler(wallet,uow):
     with uow as uow:
         try:
@@ -141,6 +143,9 @@ def deposit_to_wallet_handler(wallet,uow):
                 detail=str(e),
                 status_code=400
             )
+
+# this will be using mpesa disbursal method 
+# we add our transaction fees here for the cash made as well 
 
 def withdraw_from_wallet_handler(wallet,uow):
     with uow as uow:

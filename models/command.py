@@ -4,7 +4,8 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 from fastapi import Request 
 class Command(BaseModel):
-    pass 
+    #this allow us to pass python objects that are not necessarily models
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 """
@@ -22,7 +23,7 @@ class LoginUser(Command):
 class GetAllUser(Command):
     pass 
 class CreateWalletRequest(Command):
-    balance:Decimal 
+    balance:Decimal ]
     pin:int 
 
 class CreateWallet(Command):
@@ -73,9 +74,11 @@ class CreateTransfer(Command):
 
 class TransactionPaymentCallback(Command):
     db:Session 
-    reqs:Request
-
-
+    reqs:Request 
+    
+#this crashes the app because session and request are not pydantic models so a better correction
 class MpesaStkCallBack(Command):
     db:Session
     reqs:Request
+
+

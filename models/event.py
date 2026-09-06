@@ -4,7 +4,7 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 from fastapi import Request
 class Event(BaseModel):
-    pass 
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class UserCreated(Event):

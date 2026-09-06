@@ -114,7 +114,7 @@ async def process_payment_callback(
     datab=db
     req=request
     command=TransactionPaymentCallback(
-        reqs:req,
+        reqs=req,
         db=datab
     )
 
