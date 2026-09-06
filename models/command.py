@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel,ConfigDict
 from decimal import Decimal
 from sqlalchemy.orm import Session
 from fastapi import Request 
