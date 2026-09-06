@@ -100,3 +100,38 @@ async def get_all_wallets(
         'balance':wallet.balance,
         'created_at':wallet.created_at
     }for wallet in wallets]
+
+
+
+
+@wallet_router.get('/payment/callback')
+async def process_payment_callback(
+    request:Request,
+    payload:TransactionPaymentCallback,
+    db:Session=Depends(connect)
+    ):
+    uow=UnitOfWork()
+    datab=db
+    req=request
+    command=TransactionPaymentCallback(
+        reqs:req,
+        db=datab
+    )
+
+
+    return handle(message=command,uow=uow)
+
+@wallet_router.post("/mpesa/callback")
+async def process_mpesa_callback(
+    request:Request,
+    payload:MpesaStkCallback,
+    db:Session=Depends(connect)
+):
+    uow=UnitOfWork()
+    datab=db
+    rep=request 
+    command=MpesaStkCallback(
+        db=datab
+        reqs=rep
+    )
+    return handle(message=command,uow=uow)

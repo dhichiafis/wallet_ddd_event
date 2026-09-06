@@ -1,0 +1,124 @@
+import requests 
+import json 
+from requests.auth import HTTPBasicAuth
+from datetime import timedelta,time,datetime
+import base64
+
+from infrastructure.config_env import settings
+
+from infrastructure.config_env import settings
+import requests
+
+
+
+def get_access_token():
+    #url="https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
+    #CONSUMER_KEY=""
+    #CONSUMER_SECRET=""
+    #replaced with live mpesa details 
+    url="https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
+    basic=HTTPBasicAuth(settings.CONSUMER_KEY,settings.CONSUMER_SECRET)
+    response=requests.get(
+        url=url,
+        auth=basic
+    )
+    if(response.status_code==200):
+        data=response.json()
+        token=data['access_token']
+        return token
+    else:
+        return {'message':'failed to get the token'}
+
+    
+
+
+def send_prompt_push(phone_number,amount):
+    print('stk call is initiated')
+    token=get_access_token()
+    url="https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+    timestamp=datetime.now()
+    timestampe=timestamp.strftime('%Y%m%d%H%M%S')
+    #print(timestampe)
+    print(token)
+    #passkey="bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+    passkey="b810df7928546cff0698cf6a80b44506048799fa64e96645ef7cf925f4ca35c7"
+    shortcode="4002159"
+    data=shortcode+passkey+timestampe
+    
+    password=base64.b64encode(data.encode('utf-8')).decode('utf-8')
+    #print(password)
+    body={
+  "Password":password,
+  "BusinessShortCode": shortcode,
+  "Timestamp": timestampe,
+  "Amount": int(amount),#the amount is an integer or the callback fails to indicate success status of 
+  "PartyA": phone_number,
+  "PartyB": shortcode,
+  "TransactionType": "CustomerPayBillOnline",
+  "PhoneNumber": phone_number,
+  "TransactionDesc": "Test",
+  "AccountReference": "Msiwalle",
+  "CallBackURL": "https://wallet-ddd-event.onrender.com/wallet/mpesa/callback",
+  #"CallBackURL":"https://a898-102-68-77-127.ngrok-free.app/transactions/mpesa/callback"
+}
+    headers={
+        "Content-Type": "application/json",
+    "Authorization": f"Bearer {token}"
+    }
+
+    
+
+    response=requests.post(
+        url=url,
+        json=body,
+        headers=headers
+    )
+    return response.json()
+send_prompt_push(phone_number=254715921815,
+                 amount=50
+                 )
+
+
+
+def disburse_payments(phone_number,amount):
+    #url="https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest"
+    #replace with live url
+    url="https://api.safaricom.co.ke/mpesa/b2c/v1/paymentrequest"
+    #replace with live shortcode
+    shortcode="4002159"
+    body={
+        "OriginatorConversationID": "a6351cf491ef493c831d82e337d4e2b4", 
+    "InitiatorName": "odhisochitigaone", 
+    "SecurityCredential": "gZGr4HXHlgiNvGGJoJKKdfGb7bGbh0oCWvK1ipfjOp9+jQ/S0Mn8OT2LURuHlJHVmeHsGhgiFyW0nvplbLDyYG9ipLrctsnLIuc2DNm9+9ftZk5fgVjKNRm2Jmn1NU6nK1bi1j06VV5rkOVs30qnuO1cJnTqGyf2ahf1Q6soaIakHgDbflYi92PVAnCgzcFgUAiV7xIT9VO0nAonoBzyVkmUc0rORScWRHiBmL6C1Smeyjn/FpBq3bejx/d26jNi11MpJKmmXvxjJ0WzT3veFkmrlvlxTZOKLPfxX9rdR0Zs+CMwOyLgCPAXk74XIGqFhoW2vRkaJuZxT7SUIYgOkw==", 
+    "CommandID": "BusinessPayment", 
+    "Amount": int(amount), 
+    "PartyA": shortcode, 
+    "PartyB": phone_number, 
+    "Remarks": "remarked", 
+    "QueueTimeOutURL": "https://mydomain.com/path", 
+    "ResultURL": "https://wallet-ddd-event.onrender.com/wallet/payment/callback", 
+    "Occassion": "ChristmasPay" 
+    }
+    token=get_access_token()
+    headers={
+        "Content-Type": "application/json",
+    "Authorization": f"Bearer {token}"
+    }
+
+    response=requests.post(
+        url=url,
+        json=body,
+        headers=headers
+    )
+    if response.status_code==200:
+        print(response.json())
+    else:
+        print('faild to post')
+    data= response.json()
+    if data.get("ResponseCode") != "0":
+        raise Exception(f"B2C Failed: {data}")
+
+    return data
+
+
+

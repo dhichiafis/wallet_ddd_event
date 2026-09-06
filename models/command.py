@@ -1,6 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel
 from decimal import Decimal
+from sqlalchemy.orm import Session
+from fastapi import Request 
 class Command(BaseModel):
     pass 
 
@@ -68,3 +70,12 @@ class CreateTransfer(Command):
     amount:Decimal
     #status:str
     #created_at:datetime 
+
+class TransactionPaymentCallback(Command):
+    db:Session 
+    reqs:Request
+
+
+class MpesaStkCallBack(Command):
+    db:Session
+    reqs:Request

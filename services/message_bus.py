@@ -17,6 +17,8 @@ COMMANDS={
     WithdrawFromWallet:withdraw_from_wallet_handler,
     CreateTransfer:tranfer_to_wallet_handler,
     GetAllUser:get_all_users_handler,
+    TransactionPaymentCallback:process_payment_callback,
+    MpesaStkCallback:mpesa_callback
 }
 
 EVENTS={

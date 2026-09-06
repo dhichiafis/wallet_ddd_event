@@ -4,6 +4,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     db_url: str
+    CONSUMER_KEY:str 
+    CONSUMER_SECRET:str 
     #secret_key: str
     #algorithm: str = "HS256"
     #access_token_expire_minutes: int = 30

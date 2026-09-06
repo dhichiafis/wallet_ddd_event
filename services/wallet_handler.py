@@ -25,11 +25,116 @@ def deposit_to_wallet_handler(wallet,uow):
             transaction_id=None,
             wallet_id=mywallet.id,
             type='deposit',
-            description='deposit to my wallet',
+            description=f'deposit to my wallet {mywallet.id}',
             amount=wallet.amount,
             created_at=datetime.now(ZoneInfo('Africa/Nairobi'))
         )
             uow.transrepo.create_transaction(transaction)
+            cash_account=uow.ledgeraccrepo.get_by_ledger_account_name('Cash Account')
+            if cash_account is None:
+                raise ValueError(
+                    "Cash Account does not exist"
+                )
+            wallet_withdrawable_account=uow.ledgeraccrepo.get_by_ledger_account_name('Wallet Withdrawable Account')
+                        
+
+            if wallet_withdrawable_account is None:
+                raise ValueError(
+                    "Wallet Liability Account does not exist"
+                )
+            journal_entry = JournalEntry(
+                journalentry_id=None,
+
+                description=(
+                    f"Deposit of {wallet.amount} "
+                    f"to wallet {mywallet.id}"
+                ),
+
+                created_at=datetime.now(
+                    ZoneInfo("Africa/Nairobi")
+                )
+            )
+            cash_line = JournalEntryLine(
+
+                journalentryline_id=None,
+
+                # We carry the wallet ID from the transaction.
+                wallet_id=transaction.wallet_id,
+
+                account_name=cash_account.ledgeraccountname,
+
+                debit=wallet.amount,
+
+                credit=0
+            )
+            wallet_line = JournalEntryLine(
+
+                journalentryline_id=None,
+
+                wallet_id=transaction.wallet_id,
+
+                account_name=wallet_withdrawable_account.ledgeraccountname,
+
+                debit=0,
+
+                credit=wallet.amount
+            )
+            journal_entry.add_lines(
+                cash_line
+            )
+
+            journal_entry.add_lines(
+                wallet_line
+            )
+            if not journal_entry.valid_entry():
+
+                raise ValueError(
+                    "Journal entry is not balanced"
+                )
+            cash_ledger_line = LedgerAccountLines(
+
+                ledgeraccountlines_id=None,
+
+                wallet_id=transaction.wallet_id,
+
+                description=(
+                    f"Deposit to wallet "
+                    f"{transaction.wallet_id}"
+                ),
+
+                debit=wallet.amount,
+
+                credit=0
+            )
+            wallet_ledger_line = LedgerAccountLines(
+
+                ledgeraccountlines_id=None,
+
+                wallet_id=transaction.wallet_id,
+
+                description=(
+                    f"Deposit to wallet "
+                    f"{transaction.wallet_id}"
+                ),
+
+                debit=0,
+
+                credit=wallet.amount
+            )
+            cash_account.post_to_ledger(
+                cash_ledger_line
+            )
+            wallet_withdrawable_account.post_to_ledger(
+                wallet_ledger_line
+            )
+            uow.ledgeraccountrepo.create_ledger(
+                cash_account
+            )
+
+            uow.ledgeraccountrepo.create_ledger(
+                wallet_withdrawable_account
+            )
+
             return {'message':'you have deposited money into your account'}
         except Exception as e:
             return HTTPException(
@@ -111,3 +216,63 @@ def get_wallet_statements(wallet,uow):
 def send_message(wallet,uow):
     print('messag is that your have created your wallet')
     print('this is it with balance',wallet.balance)
+
+
+def process_payment_callback(message,uow):
+    payload=await message.request.json()
+    payment_callback=payload.get("Result")
+
+    print(payment_callback)
+    if not payment_callback:
+        return {}
+    conversation_id=payment_callback.get("ConversationID")
+    transaction_id=payment_callback.get('TransactionID')
+    result_code=payment_callback.get('ResultCode')
+    #find the transaction wit the checkout id
+    transaction=message.db.query(Transaction).filter(
+        Transaction.checkout_id==conversation_id).first()
+    if not transaction:
+        return {"ResultCode": 0, 
+                "ResultDesc": "Transaction not found"}
+    #claim = transaction.claim 
+    if result_code == 0:
+        transaction.status = "successful"
+        transaction.mpesa_receipt = transaction_id
+
+        #if claim:
+        #    claim.status = "paid"
+    else:
+        transaction.status = "failed"
+        #if claim:
+         #   claim.status = "failed"
+    db.commit()
+    return {"ResultCode": 0, "ResultDesc": "Success"}
+
+
+def mpesa_callback(message,uow):
+    payload = await message:request.json()
+
+    stk = payload["Body"]["stkCallback"]
+    checkout_id = stk["CheckoutRequestID"]
+    result_code = stk["ResultCode"]
+
+    transaction = message.db.query(Transaction).filter(
+        Transaction.checkout_request_id == checkout_id
+    ).first()
+
+    if not transaction:
+        return {"ResultCode": 0, "ResultDesc": "Accepted"}
+
+    if result_code == 0:
+        transaction.status = "completed"
+        # TODO: create accounting entries here
+    else:
+        transaction.status = "failed"
+
+    db.commit()
+
+    # Safaricom expects THIS
+    return {
+        "ResultCode": 0,
+        "ResultDesc": "Accepted"
+    }

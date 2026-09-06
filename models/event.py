@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
 from decimal import Decimal
+from sqlalchemy.orm import Session
+from fastapi import Request
 class Event(BaseModel):
     pass 
 
@@ -23,5 +25,9 @@ class TransactionCreated(Event):
     type:str 
     description:str 
     amount:Decimal
+    mpesa_receipt:str
+    checkout_id:str
     created_at:datetime 
+
+
             

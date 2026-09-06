@@ -15,6 +15,16 @@ class User:
                 created_at=self.created_at,
                 updated_at=self.updated_at))
 
+'''
+we are interested in the profile for doing the following one when the profile is created we tehn prompt for pin okay
+
+'''
+
+class Profile:
+    def __init__(self):
+        pass
+
+
 
 class Wallet:
     def __init__(self,id,user_id,balance,pin,created_at):
@@ -78,18 +88,25 @@ class Transfer():
         
         '''
 class Transaction:
-    def __init__(self,transaction_id,wallet_id,type,description,amount,created_at):
+    def __init__(self,
+    transaction_id,wallet_id,type,description,amount,status
+    ,mpesa_reciept,checkout_id,created_at):
         self.transaction_id=transaction_id
         self.wallet_id=wallet_id
         self.type=type 
         self.description=description
         self.amount=amount 
+        self.status=status
+        self.mpesa_receipt=mpesa_reciept #these two fields are useful for audit
+        self.checkout_id=checkout_id #now the transaction is asynchronous the user has not enter pin so we have to wait 
         self.created_at=created_at
         self.events=[]
         self.events.append(TransactionCreated(
             type=self.type,
             description=self.description,
             amount=self.amount,
+            mpesa_receipt=self.mpesa_receipt,
+            checkout_id=self.checkout_id,
             created_at=self.created_at
         ))
 
@@ -117,14 +134,14 @@ class JournalEntryLine:
     def __init__(
         self,
         journalentryline_id,
-        account_id,
+        wallet_id,
         account_name,
     
         debit,
         credit,
     ):
         self.journalentryline_id = journalentryline_id
-        self.account_id = account_id
+        self.wallet_id = wallet_id
         self.account_name = account_name
         self.debit = debit
         self.credit = credit
@@ -147,9 +164,9 @@ class LedgerAccount:
         self.ledgeraccount_lines.append(accountline)
 
 class LedgerAccountLines:
-    def __init__(self,ledgeraccountlines_id,membership,description,debit,credit):
+    def __init__(self,ledgeraccountlines_id,wallet_id,description,debit,credit):
         self.ledgeraccountlines_id =ledgeraccountlines_id
-        self.membership=membership
+        self.wallet_id=wallet_id
         self.description =description
         self.debit =debit
         self.credit =credit

@@ -61,6 +61,9 @@ transaction_table=Table(
     #channel type can be a bank transfer pesa link ,mpesa  or cash moeny
     Column('description',String),
     Column('amount',Numeric),
+    Column('status',String),
+    Column('mpesa_reciept',String,nullable=True),#these two fields are useful for audit
+    Column('checkout_id',String,nullable=True),#now the transaction is asynchronous the user has not enter pin so we have to wait 
     Column('created_at',DateTime)
 )
 
@@ -105,7 +108,7 @@ journalentrylines_table=Table(
      Column('journalentry_id',Integer,ForeignKey('journal_entries.journalentry_id')),
      Column('debit',Numeric),
      Column('credit',Numeric),
-     Column('account_id',Integer),
+     Column('wallet_id',Integer),
      Column('account_name',String)
 )
 
@@ -124,7 +127,7 @@ ledgeraccline_table=Table(
     registry.metadata,
     Column('ledgeraccountlines_id',Integer,primary_key=True),
     Column('ledgeraccount_id',Integer,ForeignKey('ledgeraccounts.ledgeracc_id')),
-    Column('membership',String,unique=True),
+    Column('wallet_id',Integer),
     Column('description',String),
     Column('debit',Numeric),
     Column('credit',Numeric),
