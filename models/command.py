@@ -23,7 +23,7 @@ class LoginUser(Command):
 class GetAllUser(Command):
     pass 
 class CreateWalletRequest(Command):
-    balance:Decimal ]
+    balance:Decimal 
     pin:int 
 
 class CreateWallet(Command):
@@ -75,7 +75,7 @@ class CreateTransfer(Command):
 class TransactionPaymentCallback(Command):
     db:Session 
     reqs:Request 
-    
+
 #this crashes the app because session and request are not pydantic models so a better correction
 class MpesaStkCallBack(Command):
     db:Session
