@@ -3,6 +3,7 @@ from repository.user import *
 from repository.wallet import *
 from repository.transaction import *
 from repository.journalentry import *
+from repository.profile import *
 from repository.ledgeraccount import *
 from infrastructure.database import *
 
@@ -15,10 +16,12 @@ class UnitOfWork:
         self.transferrepo=None 
         self.ledgeraccrepo=None 
         self.journalentrepo=None 
+        self.profilerepo=None
 
     def __enter__(self):
         self.session=SessionFactory()
         self.userrepo=UserRepository(session=self.session)
+        self.profilerepo=ProfileRepository(session=self.session)
         self.walletrepo=WalletRepository(session=self.session)
         self.transrepo=TransactionRepository(session=self.session)
         self.ledgeraccrepo=LedgerAccountRepository(session=self.session)
@@ -41,6 +44,7 @@ class UnitOfWork:
 
     def collect_events(self):
         for repo in [self.userrepo,
+        self.profilerepo,
                     self.walletrepo,self.transrepo,
                     self.ledgeraccrepo,self.journalentrepo,self.transferrepo]:
             for aggregate in repo.seen:

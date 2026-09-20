@@ -19,11 +19,36 @@ class User:
 we are interested in the profile for doing the following one when the profile is created we tehn prompt for pin okay
 
 '''
+"""
+the profile must have values otherwise we throught out errors to the user similarly we will be validating twice in the frontend as well 
 
+"""
 class Profile:
-    def __init__(self):
-        pass
+    def __init__(self,id,user_id,firstname,lastname,phonenumber,created_at):
+        self.id =id 
+        self.user_id=user_id
+        self.firstname=firstname 
+        self.lastname=lastname 
+        self.phonenumber=phonenumber
+        self.is_verified=False
+        self.created_at=created_at
+        self.events=[]
+        self.events.append()
 
+    def validate(self):
+        if self.firstname is None:
+            raise ValueError('firstname cannot be empty')
+        if self.lastname is None:
+            raise ValueError('firstname cannot be empty')
+        if self.phonenumber is None:
+            raise ValueError('phone number must be provided') 
+        
+    def is_complete(self):
+        return all([
+            self.firstname and self.firstname.strip(),
+            self.lastname and self.lastname.strip(),
+            self.phonenumber and self.phonenumber.strip(),
+            ])
 
 
 class Wallet:

@@ -3,16 +3,72 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
-from payments import *
+from services.payments import *
+
+
+from pwdlib import PasswordHash
+password_hash = PasswordHash.recommended()
+# since any transaction done in the wallet pin must be hashed instead of storing numbers 
+
+def get_pin_hash(pin):
+    return password_hash.hash(pin)
+    
+def verify_pin(pin,hashed_pin):
+    return password_hash.verify(pin,hashed_pin)
+
+
+def complete_registration_handler(command, uow):
+
+    with uow as uow:
+
+        user = uow.userrepo.get_by_id(command.user_id)
+
+        if user is None:
+            raise ValueError("User not found")
+
+        profile = Profile(
+            id=None,
+            user_id=user.id,
+            firstname=command.firstname,
+            lastname=command.lastname,
+            phonenumber=command.phonenumber,
+            created_at=datetime.now(ZoneInfo("Africa/Nairobi"))
+        )
+
+        profile.validate()
+
+        if not profile.is_complete():
+            raise ValueError("Profile is incomplete")
+
+        hashed_pin = get_pin_hash(command.pin)
+
+        newwallet = Wallet(
+            id=None,
+            user_id=user.id,
+            balance=Decimal("0"),
+            pin=hashed_pin,
+            created_at=datetime.now(ZoneInfo("Africa/Nairobi"))
+        )
+
+        uow.profilerepo.add(profile)
+        uow.walletrepo.add_wallet(newwallet)
+
+        user.is_active = True
+
+        return {
+            "message": "Account setup completed"
+        }
+
+
 def create_wallet_handler(wallet,uow):
     with uow as uow:
+        pin=get_pin_hash(wallet.pin)
         new_wallet=Wallet(
             id=None,
             user_id=wallet.user_id,
-            balance=wallet.balance,
-            pin=wallet.pin,
+            balance=0,
+            pin=pin,
             created_at=datetime.now(ZoneInfo('Africa/Nairobi'))
-
         )
         uow.walletrepo.add_wallet(new_wallet)
         return {'message':"wallet created successfully"}
@@ -169,7 +225,13 @@ def withdraw_from_wallet_handler(wallet,uow):
             )
     
 
+def authorize_wallet_withdrawal_handler(command,uow):
+    #this is the function that authorizes the step proecss 
+    #retrive teh phone number by geting the user profile and fetching teh phone numer
+    #the method to disburse money from mpesa 
 
+    pass 
+    
 def tranfer_to_wallet_handler(wallet,uow):
     with uow as uow:
         fromwallet=uow.walletrepo.get_wallet_by_user_id(user_id=wallet.user_id)
@@ -214,6 +276,15 @@ def tranfer_to_wallet_handler(wallet,uow):
         )
 
         return {'message':f'you have successfully tranfered money to wallet {wallet.to_wallet}'}
+
+
+def authorize_wallet_transfer_handler(command,uow):
+    with uow as uow:
+        #get the wallet by user id 
+        #the contract must contain the from wallet to wallet and user_id
+        #verify pin 
+        pass 
+
 def get_wallet_statements(wallet,uow):
     with uow as uow:
         pass 
@@ -224,7 +295,7 @@ def send_message(wallet,uow):
 
 
 def process_payment_callback(message,uow):
-    payload=await message.request.json()
+    payload=message.request.json()
     payment_callback=payload.get("Result")
 
     print(payment_callback)
@@ -255,7 +326,7 @@ def process_payment_callback(message,uow):
 
 
 def mpesa_callback(message,uow):
-    payload = await message:request.json()
+    payload =  message.request.json()
 
     stk = payload["Body"]["stkCallback"]
     checkout_id = stk["CheckoutRequestID"]

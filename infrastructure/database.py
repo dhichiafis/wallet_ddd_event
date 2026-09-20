@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session ,sessionmaker
 from sqlalchemy.orm import registry
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
+
+from zoneinfo import ZoneInfo
 from infrastructure.config_env import *
 
 from models.domain import *
@@ -25,9 +27,17 @@ user_table=Table(
         Column('updated_at',DateTime)  
 )
 
-
-
-
+ 
+profile_table=Table(
+    "profiles",
+    registry.metadata,
+    Column('id',Integer,primary_key=True),
+    Column('user_id',Integer,ForeignKey('users.id'),unique=True,nullable=False),
+    Column('firstname',String,nullable=False),
+    Column('lastname',String,nullable=False),
+    Column('phonenumber',String,nullable=False),
+    Column('created_at',DateTime)
+)
 wallet_table = Table(
     "wallets",
     registry.metadata,
@@ -116,7 +126,7 @@ ledgeraccount_table=Table(
     'ledgeraccounts',
     registry.metadata,
     Column('ledgeracc_id',Integer,primary_key=True),
-    Column('ledgeraccountname',String),
+    Column('ledgeraccountname',String,nullable=False,unique=True),
     Column('type',String),
     Column('created_at',DateTime)
 
@@ -189,9 +199,28 @@ registry.map_imperatively(
 #registry.metadata.create_all(bind=engine)
 
 
+registry.map_imperatively(
+    User,
+    user_table,
+    properties={
+        "profile": relationship(
+            Profile,
+            back_populates="user",
+            uselist=False
+        )
+    }
+)
 
-
-registry.map_imperatively(User,user_table)
+registry.map_imperatively(
+    Profile,
+    profile_table,
+    properties={
+        "user": relationship(
+            User,
+            back_populates="profile"
+        )
+    }
+)
 
 
 def connect():
@@ -200,3 +229,18 @@ def connect():
         yield db 
     finally:
         db.close()
+
+def seed_accounts(db:Session):
+    #def __init__(self,ledgeracc_id,ledgeraccountname,type,created_at)
+    accounts=[
+    LedgerAccount(ledgeracc_id=None,ledgeraccountname='Cash Account',type='Asset',created_at=datetime.now(ZoneInfo('Africa/Nairobi')))
+    ,LedgerAccount(ledgeracc_id=None,ledgeraccountname='Goal Account',type='Liability',created_at=datetime.now(ZoneInfo('Africa/Nairobi')))
+    ,LedgerAccount(ledgeracc_id=None,ledgeraccountname='',type='Income',created_at=datetime.now(ZoneInfo('Africa/Nairobi'))),
+    LedgerAccount(ledgeracc_id=None,ledgeraccountname="",type="",created_at=datetime.now(ZoneInfo('Africa/Nairobi')))
+    ]
+    for account in accounts:
+        account_exiest=db.query(LedgerAccount).filter(LedgerAccount.ledgeraccountname==account.ledgeraccountname).first()
+        if not account_exiest:
+            db.add(account)
+
+    db.commit()

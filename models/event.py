@@ -21,6 +21,13 @@ class WalletCreated(Event):
     created_at:datetime
     #updated_at:datetime 
 
+
+class ProfileCreated(Event):
+    user_id:int 
+    firstname:str 
+    lastname:str 
+    phonenumber:str 
+    created_at:datetime 
 class TransactionCreated(Event):
     type:str 
     description:str 

@@ -4,6 +4,7 @@ from models.command import *
 from services.user_handler import *
 from services.wallet_handler import *
 from services.unitofwork import *
+from services.profile_handler import *
 
 Message=Union[Command,Event]
 
@@ -18,7 +19,9 @@ COMMANDS={
     CreateTransfer:tranfer_to_wallet_handler,
     GetAllUser:get_all_users_handler,
     TransactionPaymentCallback:process_payment_callback,
-    MpesaStkCallback:mpesa_callback
+    MpesaStkCallBack:mpesa_callback,
+    CreateProfile:create_profile_handler,
+    CompleteRegistration:complete_registration_handler
 }
 
 EVENTS={

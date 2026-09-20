@@ -74,7 +74,7 @@ def send_prompt_push(phone_number,amount):
         headers=headers
     )
     return response.json()
-send_prompt_push(phone_number=254715921815,
+send_prompt_push(phone_number=254712567778,
                  amount=50
                  )
 

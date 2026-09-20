@@ -11,8 +11,11 @@ class UserCreate(BaseModel):
 
 
 class UserBase(BaseModel):
+    id:int 
     username:str 
+    is_active:bool
     created_at:datetime
+    updated_at:datetime 
 
 class PasswordReset(BaseModel):
     username:str 

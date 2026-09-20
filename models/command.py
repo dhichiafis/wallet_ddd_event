@@ -52,7 +52,17 @@ class WithdrawFromWallet(Command):
     amount:Decimal 
     user_id:int 
 
+ 
+class CreateProfileRequest(Command):
+     
+    firstname:str 
+    lastname:str 
+    phonenumber:str 
 
+
+class CreateProfile(CreateProfileRequest):
+    user_id:int
+    
 class GetStatement(Command):
     wallet_id:int 
 
@@ -82,3 +92,10 @@ class MpesaStkCallBack(Command):
     reqs:Request
 
 
+
+class CompleteRegistration(Command):
+    user_id: int
+    firstname: str
+    lastname: str
+    phonenumber: str
+    pin: int
