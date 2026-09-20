@@ -21,7 +21,7 @@ def complete_registration_handler(command, uow):
 
     with uow as uow:
 
-        user = uow.userrepo.get_by_id(command.user_id)
+        user = uow.userrepo.get_user_by_id(command.user_id)
 
         if user is None:
             raise ValueError("User not found")
