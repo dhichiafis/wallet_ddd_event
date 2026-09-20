@@ -33,7 +33,7 @@ class Profile:
         self.is_verified=False
         self.created_at=created_at
         self.events=[]
-        self.events.append()
+        #self.events.append()
 
     def validate(self):
         if self.firstname is None:
