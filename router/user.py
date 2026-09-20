@@ -26,7 +26,7 @@ async def register_user(
 
 
 @user_router.post('/token')
-@limiter.limit("3/minute")
+#@limiter.limit("8/minute")
 async def login_for_access_token(
     request:Request,
     form_data: OAuth2PasswordRequestForm=Depends(),
