@@ -60,5 +60,7 @@ async def delete_user(
     user=db.query(User).filter(User.username==username).first()
     if not user:
         raise HTTPException(detail='user does not exist',status_code=400)
-    return db.delete(user)
+    db.delete(user)
+    db.commit()
+    return {'message':f"user {username} deleted successfully"}
     
