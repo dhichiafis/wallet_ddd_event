@@ -16,7 +16,8 @@ def create_user(user,uow):
         new_user=User(
             id=None,
             username=user.username,
-            password=password,is_active=True,
+            password=password,
+            is_active=False,
             created_at=datetime.now(ZoneInfo("Africa/Nairobi"))
             ,updated_at=datetime.now(ZoneInfo('Africa/Nairobi'))
             )

@@ -52,3 +52,13 @@ async def read_users_me(
 ):
     return current_user
 
+@user_router.delete("/delete")
+async def delete_user(
+    username:str,
+    db:Session=Depends(connect)
+):
+    user=db.query(User).filter(User.username==username).first()
+    if not user:
+        raise HTTPException(detail='user does not exist',status_code=400)
+    return db.delete(user)
+    
