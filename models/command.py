@@ -92,7 +92,12 @@ class MpesaStkCallBack(Command):
     reqs:Request
 
 
-
+class CompleteRegistrationRequest(Command):
+    firstname:str 
+    lastname:str 
+    phonenumber:str 
+    pin:str 
+    
 class CompleteRegistration(Command):
     user_id: int
     firstname: str

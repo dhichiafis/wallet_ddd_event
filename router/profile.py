@@ -32,7 +32,7 @@ async def create_profile(
 
 @profile_router.post('/register')
 async def register_profile(
-    payload:CompleteRegistration,
+    payload:CompleteRegistrationRequest,
     user:User=Depends(get_current_active_user)
 ):
     uow=UnitOfWork()
