@@ -98,4 +98,4 @@ class CompleteRegistration(Command):
     firstname: str
     lastname: str
     phonenumber: str
-    pin: int
+    pin: str

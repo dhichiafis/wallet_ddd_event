@@ -50,7 +50,7 @@ def complete_registration_handler(command, uow):
             created_at=datetime.now(ZoneInfo("Africa/Nairobi"))
         )
 
-        uow.profilerepo.add(profile)
+        uow.profilerepo.add_profile(profile)
         uow.walletrepo.add_wallet(newwallet)
 
         user.is_active = True
