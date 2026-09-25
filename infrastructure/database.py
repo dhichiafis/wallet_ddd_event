@@ -199,6 +199,7 @@ registry.map_imperatively(
 #registry.metadata.create_all(bind=engine)
 
 
+
 registry.map_imperatively(
     User,
     user_table,
@@ -206,11 +207,11 @@ registry.map_imperatively(
         "profile": relationship(
             Profile,
             back_populates="user",
-            uselist=False
+            uselist=False,
+            cascade="all, delete-orphan"
         )
     }
 )
-
 registry.map_imperatively(
     Profile,
     profile_table,
