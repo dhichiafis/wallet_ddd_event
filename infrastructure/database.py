@@ -32,7 +32,7 @@ profile_table=Table(
     "profiles",
     registry.metadata,
     Column('id',Integer,primary_key=True),
-    Column('user_id',Integer,ForeignKey('users.id'),unique=True,nullable=False),
+    Column('user_id',Integer,ForeignKey('users.id',on_delete='CASCADE'),unique=True,nullable=False),
     Column('firstname',String,nullable=False),
     Column('lastname',String,nullable=False),
     Column('phonenumber',String,nullable=False),
