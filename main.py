@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 app=FastAPI()
 
-
+initialize_accounts()
 app.state.limiter=limiter
 app.add_exception_handler(
     RateLimitExceeded,

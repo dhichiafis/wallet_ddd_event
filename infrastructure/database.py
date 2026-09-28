@@ -303,7 +303,16 @@ def connect():
     db=SessionFactory()
 
     try:
-        seed_accounts(db=db)
+       # seed_accounts(db=db)
         yield db 
+    finally:
+        db.close()
+
+
+def initialize_accounts():
+    db = SessionFactory()
+
+    try:
+        seed_accounts(db)
     finally:
         db.close()
