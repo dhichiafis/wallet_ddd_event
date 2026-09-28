@@ -172,6 +172,29 @@ ledgeraccline_table=Table(
 
 
 registry.map_imperatively(
+    LedgerAccount,
+    ledgeraccount_table,
+    properties={
+        "ledgeraccount_lines": relationship(
+            LedgerAccountLines,
+            back_populates="ledger_account",
+            cascade="all, delete-orphan"
+        )
+    }
+)
+
+registry.map_imperatively(
+    LedgerAccountLines,
+    ledgeraccline_table,
+    properties={
+        "ledger_account": relationship(
+            LedgerAccount,
+            back_populates="ledgeraccount_lines"
+        )
+    }
+)
+
+registry.map_imperatively(
     JournalEntry,
     journal_entry_table,
     properties={
@@ -205,8 +228,10 @@ registry.map_imperatively(
         )
     }
 )
-registry.map_imperatively(LedgerAccount,ledgeraccount_table)
-registry.map_imperatively(LedgerAccountLines,ledgeraccline_table)
+#egistry.map_imperatively(LedgerAccount,ledgeraccount_table)
+
+\
+#registry.map_imperatively(LedgerAccountLines,ledgeraccline_table)
 registry.map_imperatively(
     Transfer,
     transfer_table
