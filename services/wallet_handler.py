@@ -108,20 +108,23 @@ def withdrawal_handler(command,uow):
         print(response)
         result = response.get("Result")
 
+        '''
         if not result:
-            raise ValueError("Invalid B2C response")
-
-        if result.get("ResultCode") != 0:
-            raise ValueError(
-            f"Disbursement failed: {result}")
-
-        conversation_id = result.get("ConversationID")
-        if not conversation_id:
-            raise ValueError(
-        "B2C did not return ConversationID")
-        transaction.checkout_id=conversation_id
-        uow.transrepo.create_transaction(transaction)
+                    raise ValueError("Invalid B2C response")
         
+                if result.get("ResultCode") != 0:
+                    raise ValueError(
+                    f"Disbursement failed: {result}")
+        
+                conversation_id = result.get("ConversationID")
+                if not conversation_id:
+                    raise ValueError(
+                "B2C did not return ConversationID")
+                transaction.checkout_id=conversation_id
+                uow.transrepo.create_transaction(transaction)
+                
+        
+        '''
         uow.commit()
         
         return {
