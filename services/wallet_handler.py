@@ -275,9 +275,9 @@ def mpesa_callback(message, uow):
             
             uow.journalentrepo.create_journal_entry(journal_entry)
 
-            cash_account = uow.ledgeraccrepo.get_by_name("Cash Account")
+            cash_account = uow.ledgeraccrepo.get_by_ledger_account_name("Cash Account")
 
-            wallet_account = uow.ledgeraccrepo.get_by_name("Wallet Withdrawable Account")
+            wallet_account = uow.ledgeraccrepo.get_by_ledger_account_name("Wallet Withdrawable Account")
             
             cash_ledger_line = LedgerAccountLines(
                 ledgeraccountlines_id=None,
