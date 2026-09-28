@@ -54,6 +54,17 @@ class User:
                 created_at=self.created_at,
                 updated_at=self.updated_at))
 
+    def __str__(self):
+        return (
+            f"User("
+            f"id={self.id}, "
+            f"username='{self.username}', "
+            f"is_active={self.is_active}, "
+            f"created_at={self.created_at}, "
+            f"updated_at={self.updated_at}"
+            f")"
+        )
+
 
 '''
 we are interested in the profile for doing the following one when the profile is created we tehn prompt for pin okay
@@ -89,7 +100,21 @@ class Profile:
             self.lastname and self.lastname.strip(),
             self.phonenumber,
             ])
+    def __str__(self):
+        return (
+            f"Profile("
+            f"id={self.id}, "
+            f"user_id={self.user_id}, "
+            f"firstname='{self.firstname}', "
+            f"lastname='{self.lastname}', "
+            f"phonenumber='{self.phonenumber}', "
+            f"is_verified={self.is_verified}, "
+            f"created_at={self.created_at}"
+            f")"
+        )
 
+    def __repr__(self):
+        return self.__str__()
 
 class Wallet:
     def __init__(self,id,user_id,balance,pin,created_at):
@@ -133,6 +158,19 @@ class Wallet:
     def create_goal(self,goal):
         self.goals.append(goal)
 
+    def __str__(self):
+        return (
+            f"Wallet("
+            f"id={self.id}, "
+            f"user_id={self.user_id}, "
+            f"balance={self.balance}, "
+            f"created_at={self.created_at}"
+            f")"
+        )
+
+    def __repr__(self):
+        return self.__str__()
+
 class Goal:
     def __init__(self,goal_id,wallet_id,goal_name,target_amount,target_duration,purpose,created_at,updated_at):
         self.goal_id=goal_id
@@ -159,16 +197,34 @@ class Goal:
 
         self.contributions.append(contribution)
         
-
+    
 
 class GoalContributions:
-    def __init__(self):
-        self.goal_contribution_id 
-        self.goal_id 
-        self.contribution_amount 
-        self.contribution_date 
-        self.events=[]
-        
+    def __init__(
+        self,
+        goal_contribution_id,
+        goal_id,
+        contribution_amount,
+        contribution_date
+    ):
+        self.goal_contribution_id = goal_contribution_id
+        self.goal_id = goal_id
+        self.contribution_amount = contribution_amount
+        self.contribution_date = contribution_date
+        self.events = []
+
+    def __str__(self):
+        return (
+            f"GoalContribution("
+            f"id={self.goal_contribution_id}, "
+            f"goal_id={self.goal_id}, "
+            f"amount={self.contribution_amount}, "
+            f"date={self.contribution_date}"
+            f")"
+        )
+
+    def __repr__(self):
+        return self.__str__()
 
 class Transfer():
     def __init__(self,id,from_wallet,to_wallet,amount,
@@ -192,6 +248,20 @@ class Transfer():
                 )
         
         '''
+    def __str__(self):
+        return (
+            f"Transfer("
+            f"id={self.id}, "
+            f"from_wallet={self.from_wallet}, "
+            f"to_wallet={self.to_wallet}, "
+            f"amount={self.amount}, "
+            f"status='{self.status}', "
+            f"created_at={self.created_at}"
+            f")"
+        )
+
+    def __repr__(self):
+        return self.__str__()
 class Transaction:
     def __init__(self,
     transaction_id,wallet_id,type,description,amount,status
@@ -215,6 +285,23 @@ class Transaction:
             #created_at=self.created_at
         #))
 
+    def __str__(self):
+                return (
+                    f"Transaction("
+                    f"id={self.transaction_id}, "
+                    f"wallet_id={self.wallet_id}, "
+                    f"type='{self.type}', "
+                    f"amount={self.amount}, "
+                    f"status='{self.status}', "
+                    f"mpesa_receipt='{self.mpesa_receipt}', "
+                    f"checkout_id='{self.checkout_id}', "
+                    f"created_at={self.created_at}"
+                    f")"
+                )
+        
+    def __repr__(self):
+        return self.__str__()
+
 class JournalEntry:
     def __init__(self,journalentry_id,description,created_at):
         self.journalentry_id=journalentry_id
@@ -235,6 +322,19 @@ class JournalEntry:
     def total_credits(self):
         return sum(line.credit for line in self.lines)
 
+    def __str__(self):
+        return (
+            f"JournalEntry("
+            f"id={self.journalentry_id}, "
+            f"description='{self.description}', "
+            f"created_at={self.created_at}, "
+            f"lines={len(self.lines)}"
+            f")"
+        )
+
+    def __repr__(self):
+        return self.__str__()
+
 class JournalEntryLine:
     def __init__(
         self,
@@ -250,7 +350,19 @@ class JournalEntryLine:
         self.account_name = account_name
         self.debit = debit
         self.credit = credit
+    def __str__(self):
+        return (
+            f"JournalEntryLine("
+            f"id={self.journalentryline_id}, "
+            f"wallet_id={self.wallet_id}, "
+            f"account='{self.account_name}', "
+            f"debit={self.debit}, "
+            f"credit={self.credit}"
+            f")"
+        )
 
+    def __repr__(self):
+        return self.__str__()
 
 class LedgerAccount:
     def __init__(self,ledgeracc_id,ledgeraccountname,type,created_at):
@@ -267,7 +379,21 @@ class LedgerAccount:
     
     def post_to_ledger(self,accountline):
         self.ledgeraccount_lines.append(accountline)
+    
+    def __str__(self):
+        return (
+            f"LedgerAccount("
+            f"id={self.ledgeracc_id}, "
+            f"name='{self.ledgeraccountname}', "
+            f"type='{self.type}', "
+            f"created_at={self.created_at}, "
+            f"lines={len(self.ledgeraccount_lines)}"
+            f")"
+        )
 
+    def __repr__(self):
+        return self.__str__()
+    
 class LedgerAccountLines:
     def __init__(self,ledgeraccountlines_id,wallet_id,description,debit,credit):
         self.ledgeraccountlines_id =ledgeraccountlines_id
@@ -275,3 +401,17 @@ class LedgerAccountLines:
         self.description =description
         self.debit =debit
         self.credit =credit
+        
+    def __str__(self):
+        return (
+            f"LedgerAccountLines("
+            f"id={self.ledgeraccountlines_id}, "
+            f"wallet_id={self.wallet_id}, "
+            f"description='{self.description}', "
+            f"debit={self.debit}, "
+            f"credit={self.credit}"
+            f")"
+        )
+
+    def __repr__(self):
+        return self.__str__()
