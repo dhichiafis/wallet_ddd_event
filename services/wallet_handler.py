@@ -205,9 +205,9 @@ def mpesa_callback(message, uow):
 
         checkout_id = stk["CheckoutRequestID"]
         result_code = stk["ResultCode"]
-
+        #wallet=uow.walletrepo.get_wallet_by_user_id(user_id=message.user_id)
         # -----------------------------------------
-        # 1. FETCH TRANSACTION
+        # 1. FETCH TRANSACTION FETCH WALLET AND RECORD THE BALANCE
         # -----------------------------------------
 
         transaction = uow.transrepo.get_by_checkout_id(
@@ -222,6 +222,8 @@ def mpesa_callback(message, uow):
             raise ValueError(
                 f"Transaction not found: {checkout_id}"
             )
+        wallet = uow.walletrepo.get_wallet_by_id(wallet_id=transaction.wallet_id)
+               
         print(result_code)
         # -----------------------------------------
         # 2. PAYMENT FAILED
@@ -245,7 +247,7 @@ def mpesa_callback(message, uow):
             transaction.status = "successful"
             transaction.mpesa_reciept = mpesa_receipt
             
-
+            wallet.deposit(transaction.amount)
             uow.commit()
             #transaction.mpesa_receipt = transaction_id
         else:
