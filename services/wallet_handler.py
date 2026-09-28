@@ -334,34 +334,6 @@ def process_payment_callback(message,uow):
     return {"ResultCode": 0, "ResultDesc": "Success"}
 
 #these are not used to change the state of transaction
-def mpesa_callbackvi(message,uow):
-    payload =  message.request.json()
-
-    stk = payload["Body"]["stkCallback"]
-    checkout_id = stk["CheckoutRequestID"]
-    result_code = stk["ResultCode"]
-
-    transaction = message.db.query(Transaction).filter(
-        Transaction.checkout_request_id == checkout_id
-    ).first()
-
-    if not transaction:
-        return {"ResultCode": 0, "ResultDesc": "Accepted"}
-
-    if result_code == 0:
-        transaction.status = "completed"
-        # TODO: create accounting entries here
-    else:
-        transaction.status = "failed"
-
-    message.db.commit()
-
-    # Safaricom expects THIS
-    return {
-        "ResultCode": 0,
-        "ResultDesc": "Accepted"
-    }
-
 
 def mpesa_callback(message, uow):
     payload = message.payload
@@ -370,7 +342,6 @@ def mpesa_callback(message, uow):
 
     checkout_id = stk["CheckoutRequestID"]
     result_code = stk["ResultCode"]
-    payload = message.request.json()
 
     
 
@@ -605,7 +576,10 @@ def mpesa_callback(message, uow):
         "ResultDesc": "Accepted"
     }
 
-#a definition of unused callback
+#
+'''
+
+a definition of unused callback
 def mpesa_callbackn(message, uow):
 
     payload = message.request.json()
@@ -795,3 +769,4 @@ def mpesa_callbackn(message, uow):
         "ResultCode": 0,
         "ResultDesc": "Accepted"
     }
+'''
