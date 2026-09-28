@@ -285,15 +285,16 @@ def mpesa_callback(message, uow):
                 description=f"M-Pesa deposit {mpesa_receipt}",
                 debit=transaction.amount,
                 credit=Decimal("0"))
-            
+            print(cash_ledger_line)
             wallet_ledger_line = LedgerAccountLines(
                 ledgeraccountlines_id=None,
                 wallet_id=wallet.id,
                 description=f"M-Pesa deposit {mpesa_receipt}",
                 debit=Decimal("0"),
                 credit=transaction.amount)
+            print(wallet_ledger_line)
             cash_account.post_to_ledger(cash_ledger_line)
-
+            print(cash_account)
             wallet_account.post_to_ledger(wallet_ledger_line)
             
             
