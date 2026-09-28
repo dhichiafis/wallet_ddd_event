@@ -94,7 +94,7 @@ def withdrawal_handler(command,uow):
                     transaction_id=None,
                     wallet_id=mywallet.id,
                     type="deposit",
-                    description=f"Deposit to wallet {mywallet.id}",
+                    description=f"withdrawal from  wallet {mywallet.id}",
                     amount=command.amount,
                     status="pending",
                     mpesa_reciept=None,
