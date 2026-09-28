@@ -104,7 +104,7 @@ async def get_all_wallets(
 
 
 
-@wallet_router.get('/payment/callback')
+@wallet_router.post('/payment/callback')
 async def process_payment_callback(
     request:Request,
     
