@@ -7,8 +7,13 @@ from router.transactions import *
 import uvicorn 
 from slowapi import _rate_limit_exceeded_handler
 from infrastructure.rate_limiter import *
+from infrastructure.database import *
+
+from sqlalchemy.orm import Session 
 
 app=FastAPI()
+
+
 app.state.limiter=limiter
 app.add_exception_handler(
     RateLimitExceeded,
