@@ -293,7 +293,7 @@ class Transaction:
                     f"type='{self.type}', "
                     f"amount={self.amount}, "
                     f"status='{self.status}', "
-                    f"mpesa_receipt='{self.mpesa_receipt}', "
+                    f"mpesa_reciept='{self.mpesa_reciept}', "
                     f"checkout_id='{self.checkout_id}', "
                     f"created_at={self.created_at}"
                     f")"
