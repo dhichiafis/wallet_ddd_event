@@ -226,4 +226,10 @@ def mpesa_callback(message, uow):
         # -----------------------------------------
         # 2. PAYMENT FAILED
         # -----------------------------------------
+        if result_code == 0:
+            transaction.status = "successful"
+            #transaction.mpesa_receipt = transaction_id
+        else:
+            transaction.status="failed"
+
         return {"ResultCode": 0, "ResultDesc": "Success"}
