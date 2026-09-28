@@ -108,7 +108,7 @@ def withdrawal_handler(command,uow):
         print(response)
         result = response.get("ResponseCode")
         print(result)
-        if response_code != "0":
+        if result != "0":
             raise ValueError(
                 f"B2C request was rejected: {response}"
             )
