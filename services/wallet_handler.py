@@ -235,7 +235,7 @@ def mpesa_callback(message, uow):
             for item in items:
                 if item.get("Name") == "MpesaReceiptNumber":
                     mpesa_receipt = item.get("Value")
-                break
+                    break
 
             print("M-PESA RECEIPT:", mpesa_receipt)
 
