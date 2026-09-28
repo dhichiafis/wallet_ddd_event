@@ -349,9 +349,9 @@ def mpesa_callback(message, uow):
     # 1. Find our transaction
     # ------------------------------------------------
 
-    transaction = uow.transrepo.get_by_checkout_id(
-        checkout_id
-    )
+    
+    transaction = uow.transrepo.get_by_checkout_id(checkout_id=checkout_id)
+    
 
     if transaction is None:
         return {

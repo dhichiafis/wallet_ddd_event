@@ -19,3 +19,10 @@ class TransactionRepository:
     
     def get_transaction_by_id(self,id):
         return self.session.query(Transaction).filter(Transaction.id==id).first()
+
+    def get_by_checkout_id(self, checkout_id):
+        return (
+        self.session.query(Transaction)
+        .filter(Transaction.checkout_id == checkout_id)
+        .first()
+    )
