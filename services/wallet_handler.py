@@ -264,17 +264,39 @@ def process_payment_callback(message,uow):
         wallet = uow.walletrepo.get_wallet_by_id(
             wallet_id=transaction.wallet_id
         )
-
+        print(wallet)
         if wallet is None:
             raise ValueError("Wallet does not exist")
 
         if result_code == 0:
 
             transaction.status = "successful"
+
             transaction.mpesa_reciept = transaction_id
-            print(transaction)
+
             wallet.withdraw(transaction.amount)
-            uow.commit()  
+
+            print(
+                "TRANSACTION UPDATED:",
+                transaction.status
+            )
+
+            print(
+                "M-PESA RECEIPT:",
+                transaction.mpesa_reciept
+            )
+
+            print(
+                "WALLET BALANCE:",
+                wallet.balance
+            )
+
+            uow.commit()
+
+            return {
+                "ResultCode": 0,
+                "ResultDesc": "Success"
+            }
         
         return {"ResultCode": 0, "ResultDesc": "Success"}      
 #these are not used to change the state of transaction
