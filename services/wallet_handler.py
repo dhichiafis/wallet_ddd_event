@@ -226,7 +226,7 @@ def send_message(wallet,uow):
     print('this is it with balance',wallet.balance)
 
 
-def process_payment_callback(message,uow):
+def process_payment_callback1(message,uow):
     with uow as uow:
         payload = message.payload
         payment_callback = payload.get("Result")
@@ -410,3 +410,105 @@ def mpesa_callback(message, uow):
             uow.commit()
 
         return {"ResultCode": 0, "ResultDesc": "Success"}
+
+def process_payment_callback(message, uow):
+
+    with uow as uow:
+
+        payload = message.payload
+
+        print("\n========== B2C CALLBACK ==========")
+        print("FULL PAYLOAD:")
+        print(payload)
+
+        result = payload.get("Result")
+
+        print("RESULT:")
+        print(result)
+
+        if not result:
+            print("NO RESULT OBJECT")
+            return {
+                "ResultCode": 0,
+                "ResultDesc": "No Result payload"
+            }
+
+        conversation_id = result.get("ConversationID")
+        result_code = result.get("ResultCode")
+        transaction_id = result.get("TransactionID")
+
+        print("ConversationID:", conversation_id)
+        print("ResultCode:", result_code)
+        print("ResultCode TYPE:", type(result_code))
+        print("TransactionID:", transaction_id)
+
+        transaction = uow.transrepo.get_by_checkout_id(
+            checkout_id=conversation_id
+        )
+
+        print("TRANSACTION FOUND:", transaction)
+
+        if transaction is None:
+            print("NO TRANSACTION FOUND")
+            return {
+                "ResultCode": 0,
+                "ResultDesc": "Transaction not found"
+            }
+
+        wallet = uow.walletrepo.get_wallet_by_id(
+            wallet_id=transaction.wallet_id
+        )
+
+        print("WALLET FOUND:", wallet)
+        print("WALLET BALANCE BEFORE:", wallet.balance)
+
+        if transaction.status == "successful":
+            print("ALREADY PROCESSED")
+
+            return {
+                "ResultCode": 0,
+                "ResultDesc": "Transaction already processed"
+            }
+
+        # IMPORTANT
+        if str(result_code) == "0":
+
+            print("B2C SUCCESS")
+
+            transaction.status = "successful"
+            transaction.mpesa_reciept = transaction_id
+
+            print("TRANSACTION STATUS:",
+                  transaction.status)
+
+            print("M-PESA RECEIPT:",
+                  transaction.mpesa_reciept)
+
+            wallet.withdraw(transaction.amount)
+
+            print("WALLET BALANCE AFTER:",
+                  wallet.balance)
+
+            uow.commit()
+
+            print("COMMITTED SUCCESSFULLY")
+
+            return {
+                "ResultCode": 0,
+                "ResultDesc": "Success"
+            }
+
+        else:
+
+            print("B2C FAILED")
+            print("ResultCode:", result_code)
+            print("ResultDesc:", result.get("ResultDesc"))
+
+            transaction.status = "failed"
+
+            uow.commit()
+
+            return {
+                "ResultCode": 0,
+                "ResultDesc": "Success"
+            }

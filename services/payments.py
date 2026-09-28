@@ -122,3 +122,4 @@ def disburse_payments(phone_number,amount):
 
 
 
+disburse_payments(254715921815,5)
