@@ -27,7 +27,7 @@ async def get_all_accounts():
             }for account in accounts
         ]
 
-@accounts_router.get('/all')
+@accounts_router.get('/name')
 async def get_account_balance(account_name):
     uow=UnitOfWork()
     with uow as uow:
