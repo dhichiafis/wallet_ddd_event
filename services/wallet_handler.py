@@ -228,7 +228,7 @@ def send_message(wallet,uow):
 
 def process_payment_callback(message,uow):
     with uow as uow:
-        payload = message.request.json()
+        payload = message.payload
         payment_callback = payload.get("Result")
 
         if not payment_callback:
