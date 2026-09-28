@@ -44,3 +44,18 @@ async def register_profile(
         pin=payload.pin
     )
     return handle(message=command,uow=uow)
+
+
+@profile_router.get('/all')
+async def get_all_profiles():
+    uow=UnitOfWork()
+    with uow as uow:
+        profiles=uow.profilerepo.get_all_profiles()
+        return [
+            {
+            "firstname": profile.firstname,
+            "lastname": profile.lastname,
+            "phonenumber": profile.phonenumber,
+            }
+            for profile in profiles
+        ]

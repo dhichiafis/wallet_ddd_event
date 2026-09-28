@@ -73,10 +73,86 @@ def create_wallet_handler(wallet,uow):
         uow.walletrepo.add_wallet(new_wallet)
         return {'message':"wallet created successfully"}
 
+def deposit_to_wallet_handler(command, uow):
+
+    with uow as uow:
+
+        mywallet = uow.walletrepo.get_wallet_by_user_id(
+            user_id=command.user_id
+        )
+
+        if mywallet is None:
+            raise ValueError("Wallet does not exist")
+
+        profile = uow.profilerepo.get_profile_by_user_id(
+            user_id=command.user_id
+        )
+
+        if profile is None:
+            raise ValueError("User profile does not exist")
+
+        if not profile.phonenumber:
+            raise ValueError("Phone number is not registered")
+
+        transaction = Transaction(
+            transaction_id=None,
+            wallet_id=mywallet.id,
+            type="deposit",
+            description=f"Deposit to wallet {mywallet.id}",
+            amount=command.amount,
+            status="pending",
+            mpesa_reciept=None,
+            checkout_id=None,
+            created_at=datetime.now(
+                ZoneInfo("Africa/Nairobi")
+            )
+        )
+
+        # PhoneNumber -> string
+        phone_number = str(profile.phonenumber)
+
+        # Send ONE STK Push
+        response = send_prompt_push(
+            phone_number=phone_number,
+            amount=transaction.amount
+        )
+
+        print("STK RESPONSE:", response)
+
+        if response.get("ResponseCode") != "0":
+            raise ValueError(
+                f"STK Push failed: {response}"
+            )
+
+        checkout_id = response.get(
+            "CheckoutRequestID"
+        )
+
+        if not checkout_id:
+            raise ValueError(
+                "Safaricom did not return CheckoutRequestID"
+            )
+
+        # Connect Safaricom request to our transaction
+        transaction.checkout_id = checkout_id
+
+        # Persist pending transaction
+        uow.transrepo.create_transaction(transaction)
+
+        uow.commit()
+
+        return {
+            "message": "STK push sent",
+            "status": "pending",
+            "checkout_id": checkout_id
+        }
+
 #this method has to invoke the stk push 
-def deposit_to_wallet_handler(wallet,uow):
+#teh thing is that the changes made here are that we are not modifying the source of truth
+def deposit_to_wallet_handlerv1(wallet,uow):
     with uow as uow:
         try:
+            
             mywallet=uow.walletrepo.get_wallet_by_user_id(user_id=wallet.user_id)
             mywallet.deposit(amount=wallet.amount)
             transaction=Transaction(
@@ -85,113 +161,46 @@ def deposit_to_wallet_handler(wallet,uow):
             type='deposit',
             description=f'deposit to my wallet {mywallet.id}',
             amount=wallet.amount,
+            status='pending',
+            mpesa_reciept='None',
+            checkout_id='None',
             created_at=datetime.now(ZoneInfo('Africa/Nairobi'))
         )
+            profile = uow.profilerepo.get_profile_by_user_id(
+                user_id=wallet.user_id      
+            )
+
+            if profile is None:
+                raise ValueError("User profile does not exist")
+ 
+            if not profile.phonenumber:
+                raise ValueError("Phone number is not registered")
+
+            phonenumber=profile.phonenumber
+            send_prompt_push(phone_number=phonenumber,amount=transaction.amount)
+            response = send_prompt_push(
+            phone_number=phonenumber,
+            amount=wallet.amount
+        )
+
+            print("STK RESPONSE:", response)
+
+            if response.get("ResponseCode") != "0":
+                raise ValueError(
+                f"STK Push failed: {response}"
+                )
+
+            checkout_id = response.get("CheckoutRequestID")
+
             uow.transrepo.create_transaction(transaction)
-            cash_account=uow.ledgeraccrepo.get_by_ledger_account_name('Cash Account')
-            if cash_account is None:
-                raise ValueError(
-                    "Cash Account does not exist"
-                )
-            wallet_withdrawable_account=uow.ledgeraccrepo.get_by_ledger_account_name('Wallet Withdrawable Account')
-                        
+            print("CREATED TRANSACTION")
+            print("ID:", transaction.transaction_id)
+            print("WALLET ID:", transaction.wallet_id)
+            print("TYPE:", transaction.type)
+            print("AMOUNT:", transaction.amount)
 
-            if wallet_withdrawable_account is None:
-                raise ValueError(
-                    "Wallet Liability Account does not exist"
-                )
-            journal_entry = JournalEntry(
-                journalentry_id=None,
-
-                description=(
-                    f"Deposit of {wallet.amount} "
-                    f"to wallet {mywallet.id}"
-                ),
-
-                created_at=datetime.now(
-                    ZoneInfo("Africa/Nairobi")
-                )
-            )
-            cash_line = JournalEntryLine(
-
-                journalentryline_id=None,
-
-                # We carry the wallet ID from the transaction.
-                wallet_id=transaction.wallet_id,
-
-                account_name=cash_account.ledgeraccountname,
-
-                debit=wallet.amount,
-
-                credit=0
-            )
-            wallet_line = JournalEntryLine(
-
-                journalentryline_id=None,
-
-                wallet_id=transaction.wallet_id,
-
-                account_name=wallet_withdrawable_account.ledgeraccountname,
-
-                debit=0,
-
-                credit=wallet.amount
-            )
-            journal_entry.add_lines(
-                cash_line
-            )
-
-            journal_entry.add_lines(
-                wallet_line
-            )
-            if not journal_entry.valid_entry():
-
-                raise ValueError(
-                    "Journal entry is not balanced"
-                )
-            cash_ledger_line = LedgerAccountLines(
-
-                ledgeraccountlines_id=None,
-
-                wallet_id=transaction.wallet_id,
-
-                description=(
-                    f"Deposit to wallet "
-                    f"{transaction.wallet_id}"
-                ),
-
-                debit=wallet.amount,
-
-                credit=0
-            )
-            wallet_ledger_line = LedgerAccountLines(
-
-                ledgeraccountlines_id=None,
-
-                wallet_id=transaction.wallet_id,
-
-                description=(
-                    f"Deposit to wallet "
-                    f"{transaction.wallet_id}"
-                ),
-
-                debit=0,
-
-                credit=wallet.amount
-            )
-            cash_account.post_to_ledger(
-                cash_ledger_line
-            )
-            wallet_withdrawable_account.post_to_ledger(
-                wallet_ledger_line
-            )
-            uow.ledgeraccountrepo.create_ledger(
-                cash_account
-            )
-
-            uow.ledgeraccountrepo.create_ledger(
-                wallet_withdrawable_account
-            )
+            
+            
             uow.commit()
             return {'message':'you have deposited money into your account'}
         except Exception as e:
@@ -274,7 +283,7 @@ def tranfer_to_wallet_handler(wallet,uow):
         uow.transrepo.create_transaction(
             deposit_transaction
         )
-
+        uow.commit()
         return {'message':f'you have successfully tranfered money to wallet {wallet.to_wallet}'}
 
 
@@ -321,11 +330,11 @@ def process_payment_callback(message,uow):
         transaction.status = "failed"
         #if claim:
          #   claim.status = "failed"
-    db.commit()
+    message.db.commit()
     return {"ResultCode": 0, "ResultDesc": "Success"}
 
-
-def mpesa_callback(message,uow):
+#these are not used to change the state of transaction
+def mpesa_callbackvi(message,uow):
     payload =  message.request.json()
 
     stk = payload["Body"]["stkCallback"]
@@ -345,9 +354,441 @@ def mpesa_callback(message,uow):
     else:
         transaction.status = "failed"
 
-    db.commit()
+    message.db.commit()
 
     # Safaricom expects THIS
+    return {
+        "ResultCode": 0,
+        "ResultDesc": "Accepted"
+    }
+
+
+def mpesa_callback(message, uow):
+
+    payload = message.request.json()
+
+    stk = payload["Body"]["stkCallback"]
+
+    checkout_id = stk["CheckoutRequestID"]
+    result_code = stk["ResultCode"]
+
+    # ------------------------------------------------
+    # 1. Find our transaction
+    # ------------------------------------------------
+
+    transaction = uow.transrepo.get_by_checkout_id(
+        checkout_id
+    )
+
+    if transaction is None:
+        return {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
+
+    # ------------------------------------------------
+    # 2. Idempotency protection
+    # ------------------------------------------------
+
+    if transaction.status == "completed":
+        return {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
+
+    # ------------------------------------------------
+    # 3. Failed M-Pesa payment
+    # ------------------------------------------------
+
+    if result_code != 0:
+
+        transaction.status = "failed"
+
+        uow.commit()
+
+        return {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
+
+    # ------------------------------------------------
+    # 4. Successful M-Pesa payment
+    # ------------------------------------------------
+
+    wallet = uow.walletrepo.get_wallet_by_id(
+        wallet_id=transaction.wallet_id
+    )
+
+    if wallet is None:
+        raise ValueError("Wallet not found")
+
+    # ------------------------------------------------
+    # 5. Extract M-Pesa receipt
+    # ------------------------------------------------
+
+    callback_metadata = stk.get(
+        "CallbackMetadata",
+        {}
+    )
+
+    items = callback_metadata.get(
+        "Item",
+        []
+    )
+
+    mpesa_receipt = None
+
+    for item in items:
+
+        if item.get("Name") == "MpesaReceiptNumber":
+            mpesa_receipt = item.get("Value")
+            break
+
+    if not mpesa_receipt:
+        raise ValueError(
+            "M-Pesa receipt was not returned"
+        )
+
+    # ------------------------------------------------
+    # 6. Update wallet
+    # ------------------------------------------------
+
+    wallet.deposit(
+        amount=transaction.amount
+    )
+
+    # ------------------------------------------------
+    # 7. Update transaction
+    # ------------------------------------------------
+
+    transaction.status = "completed"
+    transaction.mpesa_receipt = mpesa_receipt
+
+    # ------------------------------------------------
+    # 8. Get accounting accounts
+    # ------------------------------------------------
+
+    cash_account = (
+        uow.ledgeraccrepo
+        .get_by_ledger_account_name(
+            "Cash Account"
+        )
+    )
+
+    if cash_account is None:
+        raise ValueError(
+            "Cash Account does not exist"
+        )
+
+    wallet_withdrawable_account = (
+        uow.ledgeraccrepo
+        .get_by_ledger_account_name(
+            "Wallet Withdrawable Account"
+        )
+    )
+
+    if wallet_withdrawable_account is None:
+        raise ValueError(
+            "Wallet Withdrawable Account does not exist"
+        )
+
+    # ------------------------------------------------
+    # 9. Create journal entry
+    # ------------------------------------------------
+
+    journal_entry = JournalEntry(
+        journalentry_id=None,
+        description=(
+            f"Deposit of {transaction.amount} "
+            f"to wallet {transaction.wallet_id}"
+        ),
+        created_at=datetime.now(
+            ZoneInfo("Africa/Nairobi")
+        )
+    )
+
+    cash_line = JournalEntryLine(
+        journalentryline_id=None,
+        wallet_id=transaction.wallet_id,
+        account_name=cash_account.ledgeraccountname,
+        debit=transaction.amount,
+        credit=Decimal("0")
+    )
+
+    wallet_line = JournalEntryLine(
+        journalentryline_id=None,
+        wallet_id=transaction.wallet_id,
+        account_name=(
+            wallet_withdrawable_account
+            .ledgeraccountname
+        ),
+        debit=Decimal("0"),
+        credit=transaction.amount
+    )
+
+    journal_entry.add_lines(cash_line)
+    journal_entry.add_lines(wallet_line)
+
+    # ------------------------------------------------
+    # 10. Verify double-entry accounting
+    # ------------------------------------------------
+
+    if not journal_entry.valid_entry():
+
+        raise ValueError(
+            "Journal entry is not balanced"
+        )
+
+    # ------------------------------------------------
+    # 11. Create ledger lines
+    # ------------------------------------------------
+
+    cash_ledger_line = LedgerAccountLines(
+        ledgeraccountlines_id=None,
+        wallet_id=transaction.wallet_id,
+        description=(
+            f"Deposit to wallet "
+            f"{transaction.wallet_id}"
+        ),
+        debit=transaction.amount,
+        credit=Decimal("0")
+    )
+
+    wallet_ledger_line = LedgerAccountLines(
+        ledgeraccountlines_id=None,
+        wallet_id=transaction.wallet_id,
+        description=(
+            f"Deposit to wallet "
+            f"{transaction.wallet_id}"
+        ),
+        debit=Decimal("0"),
+        credit=transaction.amount
+    )
+
+    cash_account.post_to_ledger(
+        cash_ledger_line
+    )
+
+    wallet_withdrawable_account.post_to_ledger(
+        wallet_ledger_line
+    )
+
+    # ------------------------------------------------
+    # 12. Persist accounting
+    # ------------------------------------------------
+
+    uow.ledgeraccountrepo.create_ledger(
+        cash_account
+    )
+
+    uow.ledgeraccountrepo.create_ledger(
+        wallet_withdrawable_account
+    )
+
+    # Also persist the journal entry if your
+    # architecture has a journal repository.
+
+    # uow.journalrepo.create_journal_entry(
+    #     journal_entry
+    # )
+
+    # ------------------------------------------------
+    # 13. ONE commit
+    # ------------------------------------------------
+
+    uow.commit()
+
+    return {
+        "ResultCode": 0,
+        "ResultDesc": "Accepted"
+    }
+
+#a definition of unused callback
+def mpesa_callbackn(message, uow):
+
+    payload = message.request.json()
+
+    stk = payload["Body"]["stkCallback"]
+
+    checkout_id = stk["CheckoutRequestID"]
+    result_code = stk["ResultCode"]
+    cash_account=uow.ledgeraccrepo.get_by_ledger_account_name('Cash Account')
+    if cash_account is None:
+        raise ValueError(
+                                    "Cash Account does not exist"
+                                )
+    wallet_withdrawable_account=uow.ledgeraccrepo.get_by_ledger_account_name('Wallet Withdrawable Account')
+                                        
+                
+    if wallet_withdrawable_account is None:
+        raise ValueError(
+                                    "Wallet Liability Account does not exist"
+                                )
+    transaction = (
+        message.db.query(Transaction)
+        .filter(
+            Transaction.checkout_id == checkout_id
+        )
+        .first()
+    )
+
+    if transaction is None:
+        return {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
+
+    # Idempotency
+    if transaction.status == "completed":
+        return {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
+
+    if result_code != 0:
+
+        transaction.status = "failed"
+
+        message.db.commit()
+
+        return {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
+
+    # SUCCESS
+    transaction.status = "completed"
+
+    # Extract receipt
+    callback_metadata = stk.get(
+        "CallbackMetadata",
+        {}
+    )
+
+    items = callback_metadata.get(
+        "Item",
+        []
+    )
+
+    for item in items:
+        if item.get("Name") == "MpesaReceiptNumber":
+            transaction.mpesa_receipt = item.get(
+                "Value"
+            )
+
+    # NOW update wallet
+    wallet = (
+        message.db.query(Wallet)
+        .filter(
+            Wallet.id == transaction.wallet_id
+        )
+        .first()
+    )
+
+    if wallet is None:
+        raise ValueError("Wallet not found")
+
+    wallet.deposit(transaction.amount)
+
+    # TODO:
+    # create journal entry
+    # debit Cash
+    # credit Wallet Withdrawable
+    journal_entry = JournalEntry(
+                    journalentry_id=None,
+    
+                    description=(
+                        f"Deposit of {wallet.amount} "
+                        f"to wallet {mywallet.id}"
+                    ),
+    
+                    created_at=datetime.now(
+                        ZoneInfo("Africa/Nairobi")
+                    )
+                )
+    cash_line = JournalEntryLine(
+    
+                    journalentryline_id=None,
+    
+                    # We carry the wallet ID from the transaction.
+                    wallet_id=transaction.wallet_id,
+    
+                    account_name=cash_account.ledgeraccountname,
+    
+                    debit=wallet.amount,
+    
+                    credit=0
+                )
+    wallet_line = JournalEntryLine(
+    
+                    journalentryline_id=None,
+    
+                    wallet_id=transaction.wallet_id,
+    
+                    account_name=wallet_withdrawable_account.ledgeraccountname,
+    
+                    debit=0,
+    
+                    credit=wallet.amount
+                )
+    journal_entry.add_lines(
+                    cash_line
+                )
+    
+    journal_entry.add_lines(
+                    wallet_line
+                )
+    if not journal_entry.valid_entry():
+    
+        raise ValueError(
+                        "Journal entry is not balanced"
+                    )
+    cash_ledger_line = LedgerAccountLines(
+    
+                    ledgeraccountlines_id=None,
+    
+                    wallet_id=transaction.wallet_id,
+    
+                    description=(
+                        f"Deposit to wallet "
+                        f"{transaction.wallet_id}"
+                    ),
+    
+                    debit=wallet.amount,
+    
+                    credit=0
+                )
+    wallet_ledger_line = LedgerAccountLines(
+    
+                    ledgeraccountlines_id=None,
+    
+                    wallet_id=transaction.wallet_id,
+    
+                    description=(
+                        f"Deposit to wallet "
+                        f"{transaction.wallet_id}"
+                    ),
+    
+                    debit=0,
+    
+                    credit=wallet.amount
+                )
+    cash_account.post_to_ledger(
+                    cash_ledger_line
+                )
+    wallet_withdrawable_account.post_to_ledger(
+                    wallet_ledger_line
+                )
+    uow.ledgeraccountrepo.create_ledger(
+                    cash_account
+                )
+    
+    uow.ledgeraccountrepo.create_ledger(
+                    wallet_withdrawable_account
+                )
+
+    message.db.commit()
+
     return {
         "ResultCode": 0,
         "ResultDesc": "Accepted"

@@ -1,6 +1,43 @@
 from models.event import *
 
+import re
 
+
+class PhoneNumber:
+    def __init__(self, value: str):
+        self.value = self.normalize(value)
+        self.validate()
+
+    @staticmethod
+    def normalize(value: str) -> str:
+        if not value:
+            raise ValueError("Phone number is required")
+
+        value = value.strip().replace(" ", "")
+
+        if value.startswith("+254"):
+            value = value[1:]
+
+        elif value.startswith("0"):
+            value = "254" + value[1:]
+
+        elif not value.startswith("254"):
+            raise ValueError("Invalid Kenyan phone number")
+
+        return value
+
+    def validate(self):
+        if not re.fullmatch(r"254[17]\d{8}", self.value):
+            raise ValueError("Invalid Kenyan phone number")
+
+    def __str__(self):
+        return self.value
+
+    def __eq__(self, other):
+        if isinstance(other, PhoneNumber):
+            return self.value == other.value
+
+        return False
 class User:
     def __init__(self,id,username,password,is_active,created_at,updated_at):
         self.id =id
@@ -16,17 +53,7 @@ class User:
                 password=self.password,
                 created_at=self.created_at,
                 updated_at=self.updated_at))
-'''
 
-
-
-class PhoneNumber:
-    def __init__(self):
-        pass
-    
-    def is_phone_number_valid(self):
-        raise ValueError()
-'''
 
 '''
 we are interested in the profile for doing the following one when the profile is created we tehn prompt for pin okay
@@ -42,7 +69,7 @@ class Profile:
         self.user_id=user_id
         self.firstname=firstname 
         self.lastname=lastname 
-        self.phonenumber=phonenumber
+        self.phonenumber=PhoneNumber(phonenumber).value
         self.is_verified=False
         self.created_at=created_at
         self.events=[]
@@ -60,7 +87,7 @@ class Profile:
         return all([
             self.firstname and self.firstname.strip(),
             self.lastname and self.lastname.strip(),
-            self.phonenumber and self.phonenumber.strip(),
+            self.phonenumber,
             ])
 
 

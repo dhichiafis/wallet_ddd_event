@@ -291,7 +291,8 @@ def connect():
 def seed_accounts(db:Session):
     #def __init__(self,ledgeracc_id,ledgeraccountname,type,created_at)
     accounts=[
-    LedgerAccount(ledgeracc_id=None,ledgeraccountname='Cash Account',type='Asset',created_at=datetime.now(ZoneInfo('Africa/Nairobi')))
+    LedgerAccount(ledgeracc_id=None,ledgeraccountname='Cash Account',type='Asset',created_at=datetime.now(ZoneInfo('Africa/Nairobi'))),
+    LedgerAccount(ledgeracc_id=None,ledgeraccountname='Wallet Withdrawable Account',type='Asset',created_at=datetime.now(ZoneInfo('Africa/Nairobi')))
     ,LedgerAccount(ledgeracc_id=None,ledgeraccountname='Goal Account',type='Liability',created_at=datetime.now(ZoneInfo('Africa/Nairobi')))
     ,LedgerAccount(ledgeracc_id=None,ledgeraccountname='',type='Income',created_at=datetime.now(ZoneInfo('Africa/Nairobi'))),
     LedgerAccount(ledgeracc_id=None,ledgeraccountname="",type="",created_at=datetime.now(ZoneInfo('Africa/Nairobi')))
