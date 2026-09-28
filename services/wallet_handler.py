@@ -364,13 +364,15 @@ def mpesa_callbackvi(message,uow):
 
 
 def mpesa_callback(message, uow):
-
-    payload = message.request.json()
+    payload = message.payload
 
     stk = payload["Body"]["stkCallback"]
 
     checkout_id = stk["CheckoutRequestID"]
     result_code = stk["ResultCode"]
+    payload = message.request.json()
+
+    
 
     # ------------------------------------------------
     # 1. Find our transaction
