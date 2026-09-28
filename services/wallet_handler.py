@@ -224,81 +224,7 @@ def get_wallet_statements(wallet,uow):
 def send_message(wallet,uow):
     print('messag is that your have created your wallet')
     print('this is it with balance',wallet.balance)
-
-
-def process_payment_callback1(message,uow):
-    with uow as uow:
-        payload = message.payload
-        payment_callback = payload.get("Result")
-
-        if not payment_callback:
-            return {
-                "ResultCode": 0,
-                "ResultDesc": "No Result payload"
-            }
-
-        conversation_id = payment_callback.get(
-            "ConversationID"
-        )
-
-        transaction_id = payment_callback.get(
-            "TransactionID"
-        )
-
-        result_code = payment_callback.get(
-            "ResultCode"
-        )
-
-        transaction = (
-            uow.transrepo.get_by_checkout_id(
-                checkout_id=conversation_id
-            )
-        )
-        print(transaction)
-        if transaction is None:
-            return {
-                "ResultCode": 0,
-                "ResultDesc": "Transaction not found"
-            }
-
-        wallet = uow.walletrepo.get_wallet_by_id(
-            wallet_id=transaction.wallet_id
-        )
-        print(wallet)
-        if wallet is None:
-            raise ValueError("Wallet does not exist")
-
-        if result_code == 0:
-
-            transaction.status = "successful"
-
-            transaction.mpesa_reciept = transaction_id
-
-            wallet.withdraw(transaction.amount)
-
-            print(
-                "TRANSACTION UPDATED:",
-                transaction.status
-            )
-
-            print(
-                "M-PESA RECEIPT:",
-                transaction.mpesa_reciept
-            )
-
-            print(
-                "WALLET BALANCE:",
-                wallet.balance
-            )
-
-            uow.commit()
-
-            return {
-                "ResultCode": 0,
-                "ResultDesc": "Success"
-            }
-        
-        return {"ResultCode": 0, "ResultDesc": "Success"}      
+      
 #these are not used to change the state of transaction
 def mpesa_callback(message, uow):
 
@@ -488,6 +414,101 @@ def process_payment_callback(message, uow):
 
             print("WALLET BALANCE AFTER:",
                   wallet.balance)
+            journal_entry = JournalEntry(
+        journalentry_id=None,
+        description=f"B2C withdrawal - {transaction_id}",
+        created_at=datetime.now(ZoneInfo("Africa/Nairobi"))
+    )
+
+            wallet_line = JournalEntryLine(
+        journalentryline_id=None,
+        wallet_id=wallet.id,
+        account_name="Wallet Withdrawable Account",
+        debit=transaction.amount,
+        credit=Decimal("0")
+    )
+
+            cash_line = JournalEntryLine(
+        journalentryline_id=None,
+        wallet_id=wallet.id,
+        account_name="Cash Account",
+        debit=Decimal("0"),
+        credit=transaction.amount
+    )
+
+            journal_entry.add_lines(wallet_line)
+            journal_entry.add_lines(cash_line)
+
+    # ------------------------------------------------
+    # 4. Validate double entry
+    # ------------------------------------------------
+            if not journal_entry.valid_entry():
+                raise ValueError("Journal entry is not balanced")
+
+            uow.journalentrepo.create_journal_entry(journal_entry)
+
+    # ------------------------------------------------
+    # 5. Get ledger accounts
+    # ------------------------------------------------
+            wallet_account = (
+        uow.ledgeraccrepo
+        .get_by_ledger_account_name(
+            "Wallet Withdrawable Account"
+        )
+    )
+
+            cash_account = (
+        uow.ledgeraccrepo
+        .get_by_ledger_account_name(
+            "Cash Account"
+        )
+    )
+
+            if wallet_account is None:
+                raise ValueError(
+            "Wallet Withdrawable Account does not exist"
+        )
+
+            if cash_account is None:
+                raise ValueError(
+            "Cash Account does not exist"
+        )
+
+    # ------------------------------------------------
+    # 6. Post wallet ledger movement
+    # ------------------------------------------------
+            wallet_ledger_line = LedgerAccountLines(
+        ledgeraccountlines_id=None,
+        wallet_id=wallet.id,
+        description=(
+            f"B2C withdrawal {transaction_id} "
+            f"amount {transaction.amount}"
+        ),
+        debit=transaction.amount,
+        credit=Decimal("0")
+    )
+
+    # ------------------------------------------------
+    # 7. Post cash ledger movement
+    # ------------------------------------------------
+            cash_ledger_line = LedgerAccountLines(
+        ledgeraccountlines_id=None,
+        wallet_id=wallet.id,
+        description=(
+            f"B2C withdrawal {transaction_id} "
+            f"amount {transaction.amount}"
+        ),
+        debit=Decimal("0"),
+        credit=transaction.amount
+    )
+
+            wallet_account.post_to_ledger(
+        wallet_ledger_line
+    )
+
+            cash_account.post_to_ledger(
+        cash_ledger_line
+    )
 
             uow.commit()
 
