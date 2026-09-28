@@ -183,7 +183,7 @@ def process_payment_callback(message,uow):
     #claim = transaction.claim 
     if result_code == 0:
         transaction.status = "successful"
-        transaction.mpesa_receipt = transaction_id
+        transaction.mpesa_reciept = transaction_id
 
         #if claim:
         #    claim.status = "paid"
