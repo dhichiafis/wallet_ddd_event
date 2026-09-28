@@ -243,7 +243,7 @@ def mpesa_callback(message, uow):
                 raise ValueError("M-Pesa receipt number not found")
 
             transaction.status = "successful"
-            transaction.mpesa_receipt = mpesa_receipt
+            transaction.mpesa_reciept = mpesa_receipt
             
 
             uow.commit()
