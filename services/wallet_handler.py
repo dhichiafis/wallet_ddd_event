@@ -222,7 +222,7 @@ def mpesa_callback(message, uow):
             raise ValueError(
                 f"Transaction not found: {checkout_id}"
             )
-
+        print(result_code)
         # -----------------------------------------
         # 2. PAYMENT FAILED
         # -----------------------------------------
