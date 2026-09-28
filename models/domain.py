@@ -126,8 +126,8 @@ class Wallet:
         self.balance-=amount 
 
     def deposit(self,amount):
-        if amount<50:
-            raise ValueError('you must deposit more than 50 shillings')
+        if amount<5:
+            raise ValueError('you must deposit more than 5 shillings')
         self.balance+=amount
 
     def create_goal(self,goal):
@@ -206,14 +206,14 @@ class Transaction:
         self.checkout_id=checkout_id #now the transaction is asynchronous the user has not enter pin so we have to wait 
         self.created_at=created_at
         self.events=[]
-        self.events.append(TransactionCreated(
-            type=self.type,
-            description=self.description,
-            amount=self.amount,
-            mpesa_receipt=self.mpesa_receipt,
-            checkout_id=self.checkout_id,
-            created_at=self.created_at
-        ))
+        #self.events.append(TransactionCreated(
+         #   type=self.type,
+          #  description=self.description,
+           # amount=self.amount,
+            #mpesa_receipt=self.mpesa_receipt,
+            #checkout_id=self.checkout_id,
+            #created_at=self.created_at
+        #))
 
 class JournalEntry:
     def __init__(self,journalentry_id,description,created_at):
