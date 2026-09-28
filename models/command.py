@@ -87,11 +87,13 @@ class TransactionPaymentCallback(Command):
     reqs:Request 
 
 #this crashes the app because session and request are not pydantic models so a better correction
-class MpesaStkCallBack(Command):
+class MpesaStkCallBackn(Command):
     db:Session
     request:Request
 
-
+class MpesaStkCallBack(Command):
+    payload: dict
+    
 class CompleteRegistrationRequest(Command):
     firstname:str 
     lastname:str 

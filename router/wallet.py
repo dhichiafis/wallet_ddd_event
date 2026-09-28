@@ -123,16 +123,18 @@ async def process_payment_callback(
 
 @wallet_router.post("/mpesa/callback")
 async def process_mpesa_callback(
-    request:Request,
-    
-    db:Session=Depends(connect)
+    request: Request,
+    db: Session = Depends(connect)
 ):
-    uow=UnitOfWork()
-    datab=db
-    rep=request 
-   
-    command=MpesaStkCallBack(
-        db=datab,
-        request=rep
+    payload = await request.json()
+
+    command = MpesaStkCallBack(
+        payload=payload
     )
-    return handle(message=command,uow=uow)
+
+    uow = UnitOfWork()
+
+    return handle(
+        message=command,
+        uow=uow
+    )
