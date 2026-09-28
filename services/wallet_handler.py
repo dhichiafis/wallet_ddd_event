@@ -336,12 +336,13 @@ def process_payment_callback(message,uow):
 #these are not used to change the state of transaction
 
 def mpesa_callback(message, uow):
-    payload = message.payload
+    with uow as uow:
+        payload = message.payload
 
-    stk = payload["Body"]["stkCallback"]
+        stk = payload["Body"]["stkCallback"]
 
-    checkout_id = stk["CheckoutRequestID"]
-    result_code = stk["ResultCode"]
+        checkout_id = stk["CheckoutRequestID"]
+        result_code = stk["ResultCode"]
 
     
 
@@ -350,11 +351,11 @@ def mpesa_callback(message, uow):
     # ------------------------------------------------
 
     
-    transaction = uow.transrepo.get_by_checkout_id(checkout_id=checkout_id)
+        transaction = uow.transrepo.get_by_checkout_id(checkout_id=checkout_id)
     
 
-    if transaction is None:
-        return {
+        if transaction is None:
+            return {
             "ResultCode": 0,
             "ResultDesc": "Accepted"
         }
@@ -363,8 +364,8 @@ def mpesa_callback(message, uow):
     # 2. Idempotency protection
     # ------------------------------------------------
 
-    if transaction.status == "completed":
-        return {
+        if transaction.status == "completed":
+            return {
             "ResultCode": 0,
             "ResultDesc": "Accepted"
         }
@@ -373,13 +374,13 @@ def mpesa_callback(message, uow):
     # 3. Failed M-Pesa payment
     # ------------------------------------------------
 
-    if result_code != 0:
+        if result_code != 0:
 
-        transaction.status = "failed"
+            transaction.status = "failed"
 
-        uow.commit()
+            uow.commit()
 
-        return {
+            return {
             "ResultCode": 0,
             "ResultDesc": "Accepted"
         }
@@ -388,37 +389,37 @@ def mpesa_callback(message, uow):
     # 4. Successful M-Pesa payment
     # ------------------------------------------------
 
-    wallet = uow.walletrepo.get_wallet_by_id(
+        wallet = uow.walletrepo.get_wallet_by_id(
         wallet_id=transaction.wallet_id
     )
 
-    if wallet is None:
-        raise ValueError("Wallet not found")
+        if wallet is None:
+            raise ValueError("Wallet not found")
 
     # ------------------------------------------------
     # 5. Extract M-Pesa receipt
     # ------------------------------------------------
 
-    callback_metadata = stk.get(
+        callback_metadata = stk.get(
         "CallbackMetadata",
         {}
     )
 
-    items = callback_metadata.get(
+        items = callback_metadata.get(
         "Item",
         []
     )
 
-    mpesa_receipt = None
+        mpesa_receipt = None
 
-    for item in items:
+        for item in items:
 
-        if item.get("Name") == "MpesaReceiptNumber":
-            mpesa_receipt = item.get("Value")
-            break
+            if item.get("Name") == "MpesaReceiptNumber":
+                mpesa_receipt = item.get("Value")
+                break
 
-    if not mpesa_receipt:
-        raise ValueError(
+        if not mpesa_receipt:
+            raise ValueError(
             "M-Pesa receipt was not returned"
         )
 
@@ -426,7 +427,7 @@ def mpesa_callback(message, uow):
     # 6. Update wallet
     # ------------------------------------------------
 
-    wallet.deposit(
+        wallet.deposit(
         amount=transaction.amount
     )
 
@@ -434,34 +435,34 @@ def mpesa_callback(message, uow):
     # 7. Update transaction
     # ------------------------------------------------
 
-    transaction.status = "completed"
-    transaction.mpesa_receipt = mpesa_receipt
+        transaction.status = "completed"
+        transaction.mpesa_receipt = mpesa_receipt
 
     # ------------------------------------------------
     # 8. Get accounting accounts
     # ------------------------------------------------
 
-    cash_account = (
+        cash_account = (
         uow.ledgeraccrepo
         .get_by_ledger_account_name(
             "Cash Account"
         )
     )
 
-    if cash_account is None:
-        raise ValueError(
+        if cash_account is None:
+            raise ValueError(
             "Cash Account does not exist"
         )
 
-    wallet_withdrawable_account = (
-        uow.ledgeraccrepo
+        wallet_withdrawable_account = (
+            uow.ledgeraccrepo
         .get_by_ledger_account_name(
             "Wallet Withdrawable Account"
         )
     )
 
-    if wallet_withdrawable_account is None:
-        raise ValueError(
+        if wallet_withdrawable_account is None:
+            raise ValueError(
             "Wallet Withdrawable Account does not exist"
         )
 
@@ -469,7 +470,7 @@ def mpesa_callback(message, uow):
     # 9. Create journal entry
     # ------------------------------------------------
 
-    journal_entry = JournalEntry(
+        journal_entry = JournalEntry(
         journalentry_id=None,
         description=(
             f"Deposit of {transaction.amount} "
@@ -480,7 +481,7 @@ def mpesa_callback(message, uow):
         )
     )
 
-    cash_line = JournalEntryLine(
+        cash_line = JournalEntryLine(
         journalentryline_id=None,
         wallet_id=transaction.wallet_id,
         account_name=cash_account.ledgeraccountname,
@@ -488,7 +489,7 @@ def mpesa_callback(message, uow):
         credit=Decimal("0")
     )
 
-    wallet_line = JournalEntryLine(
+        wallet_line = JournalEntryLine(
         journalentryline_id=None,
         wallet_id=transaction.wallet_id,
         account_name=(
@@ -499,16 +500,16 @@ def mpesa_callback(message, uow):
         credit=transaction.amount
     )
 
-    journal_entry.add_lines(cash_line)
-    journal_entry.add_lines(wallet_line)
+        journal_entry.add_lines(cash_line)
+        journal_entry.add_lines(wallet_line)
 
     # ------------------------------------------------
     # 10. Verify double-entry accounting
     # ------------------------------------------------
 
-    if not journal_entry.valid_entry():
+        if not journal_entry.valid_entry():
 
-        raise ValueError(
+            raise ValueError(
             "Journal entry is not balanced"
         )
 
@@ -516,7 +517,7 @@ def mpesa_callback(message, uow):
     # 11. Create ledger lines
     # ------------------------------------------------
 
-    cash_ledger_line = LedgerAccountLines(
+        cash_ledger_line = LedgerAccountLines(
         ledgeraccountlines_id=None,
         wallet_id=transaction.wallet_id,
         description=(
@@ -527,7 +528,7 @@ def mpesa_callback(message, uow):
         credit=Decimal("0")
     )
 
-    wallet_ledger_line = LedgerAccountLines(
+        wallet_ledger_line = LedgerAccountLines(
         ledgeraccountlines_id=None,
         wallet_id=transaction.wallet_id,
         description=(
@@ -538,11 +539,11 @@ def mpesa_callback(message, uow):
         credit=transaction.amount
     )
 
-    cash_account.post_to_ledger(
+        cash_account.post_to_ledger(
         cash_ledger_line
     )
 
-    wallet_withdrawable_account.post_to_ledger(
+        wallet_withdrawable_account.post_to_ledger(
         wallet_ledger_line
     )
 
@@ -550,11 +551,11 @@ def mpesa_callback(message, uow):
     # 12. Persist accounting
     # ------------------------------------------------
 
-    uow.ledgeraccountrepo.create_ledger(
+        uow.ledgeraccountrepo.create_ledger(
         cash_account
     )
 
-    uow.ledgeraccountrepo.create_ledger(
+        uow.ledgeraccountrepo.create_ledger(
         wallet_withdrawable_account
     )
 
@@ -569,9 +570,9 @@ def mpesa_callback(message, uow):
     # 13. ONE commit
     # ------------------------------------------------
 
-    uow.commit()
+        uow.commit()
 
-    return {
+        return {
         "ResultCode": 0,
         "ResultDesc": "Accepted"
     }
