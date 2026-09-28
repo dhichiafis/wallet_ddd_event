@@ -107,15 +107,13 @@ async def get_all_wallets(
 @wallet_router.get('/payment/callback')
 async def process_payment_callback(
     request:Request,
-    payload:TransactionPaymentCallback,
+    
     db:Session=Depends(connect)
     ):
     uow=UnitOfWork()
-    datab=db
-    req=request
+    payload = await request.json()
     command=TransactionPaymentCallback(
-        reqs=req,
-        db=datab
+        payload=payload
     )
 
 

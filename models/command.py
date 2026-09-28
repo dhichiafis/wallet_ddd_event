@@ -82,7 +82,7 @@ class CreateTransfer(Command):
     #status:str
     #created_at:datetime 
 
-class TransactionPaymentCallback(Command):
+class TransactionPaymentCcllback(Command):
     db:Session 
     reqs:Request 
 
@@ -93,7 +93,9 @@ class MpesaStkCallBackn(Command):
 
 class MpesaStkCallBack(Command):
     payload: dict
-    
+
+class TransactionPaymentCallback(Command):
+    payload:dict
 class CompleteRegistrationRequest(Command):
     firstname:str 
     lastname:str 

@@ -73,6 +73,63 @@ def create_wallet_handler(wallet,uow):
         uow.walletrepo.add_wallet(new_wallet)
         return {'message':"wallet created successfully"}
 
+def withdrawal_handler(command,uow):
+    with uow as uow:
+        mywallet=uow.walletrepo.get_wallet_by_user_id(
+            user_id=command.user_id
+        )
+        if mywallet is None:
+            raise ValueError("Wallet does not exist")
+        
+        profile = uow.profilerepo.get_profile_by_user_id(
+                    user_id=command.user_id
+                )
+        
+        if profile is None:
+            raise ValueError("User profile does not exist")
+        
+        if not profile.phonenumber:
+            raise ValueError("Phone number is not registered")
+        transaction = Transaction(
+                    transaction_id=None,
+                    wallet_id=mywallet.id,
+                    type="deposit",
+                    description=f"Deposit to wallet {mywallet.id}",
+                    amount=command.amount,
+                    status="pending",
+                    mpesa_reciept=None,
+                    checkout_id=None,
+                    created_at=datetime.now(
+                        ZoneInfo("Africa/Nairobi")
+                    )
+        )
+        phone_number = str(profile.phonenumber)
+        response=disburse_payments(phone_number=phone_number,amount=transaction.amount)
+        
+        result = response.get("Result")
+
+        if not result:
+            raise ValueError("Invalid B2C response")
+
+        if result.get("ResultCode") != 0:
+            raise ValueError(
+            f"Disbursement failed: {result}")
+
+        conversation_id = result.get("ConversationID")
+        if not conversation_id:
+            raise ValueError(
+        "B2C did not return ConversationID")
+        transaction.checkout_id=conversation_id
+        uow.transrepo.create_transaction(transaction)
+        
+        uow.commit()
+        
+        return {
+                    "message": "STK push sent",
+                    "status": "pending",
+                    "checkout_id": conversation_id
+                }
+
 def deposit_to_wallet_handler(command, uow):
 
     with uow as uow:
@@ -165,35 +222,56 @@ def send_message(wallet,uow):
 
 
 def process_payment_callback(message,uow):
-    payload=message.request.json()
-    payment_callback=payload.get("Result")
+    with uow as uow:
+        payload = message.request.json()
+        payment_callback = payload.get("Result")
 
-    print(payment_callback)
-    if not payment_callback:
-        return {}
-    conversation_id=payment_callback.get("ConversationID")
-    transaction_id=payment_callback.get('TransactionID')
-    result_code=payment_callback.get('ResultCode')
-    #find the transaction wit the checkout id
-    transaction=message.db.query(Transaction).filter(
-        Transaction.checkout_id==conversation_id).first()
-    if not transaction:
-        return {"ResultCode": 0, 
-                "ResultDesc": "Transaction not found"}
-    #claim = transaction.claim 
-    if result_code == 0:
-        transaction.status = "successful"
-        transaction.mpesa_reciept = transaction_id
+        if not payment_callback:
+            return {
+                "ResultCode": 0,
+                "ResultDesc": "No Result payload"
+            }
 
-        #if claim:
-        #    claim.status = "paid"
-    else:
-        transaction.status = "failed"
-        #if claim:
-         #   claim.status = "failed"
-    message.db.commit()
-    return {"ResultCode": 0, "ResultDesc": "Success"}
+        conversation_id = payment_callback.get(
+            "ConversationID"
+        )
 
+        transaction_id = payment_callback.get(
+            "TransactionID"
+        )
+
+        result_code = payment_callback.get(
+            "ResultCode"
+        )
+
+        transaction = (
+            uow.transrepo.get_by_checkout_id(
+                checkout_id=conversation_id
+            )
+        )
+
+        if transaction is None:
+            return {
+                "ResultCode": 0,
+                "ResultDesc": "Transaction not found"
+            }
+
+        wallet = uow.walletrepo.get_wallet_by_id(
+            wallet_id=transaction.wallet_id
+        )
+
+        if wallet is None:
+            raise ValueError("Wallet does not exist")
+
+        if result_code == 0:
+
+            transaction.status = "successful"
+            transaction.mpesa_reciept = transaction_id
+            print(transaction)
+            wallet.withdraw(transaction.amount)
+            uow.commit()  
+        
+        return {"ResultCode": 0, "ResultDesc": "Success"}      
 #these are not used to change the state of transaction
 def mpesa_callback(message, uow):
 
@@ -282,14 +360,14 @@ def mpesa_callback(message, uow):
             cash_ledger_line = LedgerAccountLines(
                 ledgeraccountlines_id=None,
                 wallet_id=wallet.id,
-                description=f"M-Pesa deposit {mpesa_receipt}",
+                description=f"M-Pesa deposit t{mpesa_receipt} of amount{transaction.amount} ",
                 debit=transaction.amount,
                 credit=Decimal("0"))
             print(cash_ledger_line)
             wallet_ledger_line = LedgerAccountLines(
                 ledgeraccountlines_id=None,
                 wallet_id=wallet.id,
-                description=f"M-Pesa deposit {mpesa_receipt}",
+                description=f"M-Pesa deposit t{mpesa_receipt} of amount{transaction.amount} ",
                 debit=Decimal("0"),
                 credit=transaction.amount)
             print(wallet_ledger_line)
