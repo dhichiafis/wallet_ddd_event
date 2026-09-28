@@ -248,6 +248,55 @@ def mpesa_callback(message, uow):
             transaction.mpesa_reciept = mpesa_receipt
             
             wallet.deposit(transaction.amount)
+            journal_entry = JournalEntry(
+                journalentry_id=None,
+                description=f"M-Pesa deposit - {mpesa_receipt}",
+                created_at=datetime.now(
+                ZoneInfo("Africa/Nairobi")))
+            cash_line = JournalEntryLine(
+                journalentryline_id=None,
+                wallet_id=wallet.id,
+                account_name="Cash Account",
+                debit=transaction.amount,
+                credit=Decimal("0"))
+
+            wallet_line = JournalEntryLine(
+                journalentryline_id=None,
+                wallet_id=wallet.id,
+                account_name="Wallet Withdrawable Account",
+                debit=Decimal("0"),
+                credit=transaction.amount)
+            
+            journal_entry.add_lines(cash_line)
+            journal_entry.add_lines(wallet_line)
+
+            if not journal_entry.valid_entry():
+                raise ValueError("Journal entry is not balanced")
+            
+            uow.journalentrepo.create_journal_entry(journal_entry)
+
+            cash_account = uow.ledgeraccrepo.get_by_name("Cash Account")
+
+            wallet_account = uow.ledgeraccrepo.get_by_name("Wallet Withdrawable Account")
+            
+            cash_ledger_line = LedgerAccountLines(
+                ledgeraccountlines_id=None,
+                wallet_id=wallet.id,
+                description=f"M-Pesa deposit {mpesa_receipt}",
+                debit=transaction.amount,
+                credit=Decimal("0"))
+            
+            wallet_ledger_line = LedgerAccountLines(
+                ledgeraccountlines_id=None,
+                wallet_id=wallet.id,
+                description=f"M-Pesa deposit {mpesa_receipt}",
+                debit=Decimal("0"),
+                credit=transaction.amount)
+            cash_account.post_to_ledger(cash_ledger_line)
+
+            wallet_account.post_to_ledger(wallet_ledger_line)
+            
+            
             uow.commit()
             #transaction.mpesa_receipt = transaction_id
         else:
