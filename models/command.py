@@ -104,3 +104,24 @@ class CompleteRegistration(Command):
     lastname: str
     phonenumber: str
     pin: str
+
+
+
+
+    
+
+class CreateGoal(Command):
+    goal_name:str 
+    target_amount: Decimal 
+    target_duration:int 
+    purpose:str 
+    initial_amount:Decimal
+
+
+class CreateGoalRequest(CreateGoal):
+    user_id:int 
+
+class ContributeToGoal(Command):
+    user_id: int
+    goal_id: int
+    amount: Decimal

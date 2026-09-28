@@ -5,6 +5,7 @@ from services.user_handler import *
 from services.wallet_handler import *
 from services.unitofwork import *
 from services.profile_handler import *
+from services.goal_handler import *
 
 Message=Union[Command,Event]
 
@@ -21,7 +22,8 @@ COMMANDS={
     TransactionPaymentCallback:process_payment_callback,
     MpesaStkCallBack:mpesa_callback,
     CreateProfile:create_profile_handler,
-    CompleteRegistration:complete_registration_handler
+    CompleteRegistration:complete_registration_handler,
+    CreateGoalRequest:create_goal_handler
 }
 
 EVENTS={

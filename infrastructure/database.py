@@ -32,12 +32,14 @@ profile_table=Table(
     "profiles",
     registry.metadata,
     Column('id',Integer,primary_key=True),
-    Column('user_id',Integer,ForeignKey('users.id',on_delete='CASCADE'),unique=True,nullable=False),
+    Column('user_id',Integer,ForeignKey('users.id',ondelete='CASCADE'),unique=True,nullable=False),
     Column('firstname',String,nullable=False),
     Column('lastname',String,nullable=False),
     Column('phonenumber',String,nullable=False),
     Column('created_at',DateTime)
 )
+
+
 wallet_table = Table(
     "wallets",
     registry.metadata,
@@ -53,6 +55,31 @@ wallet_table = Table(
   #  registry.metadata,
 
 #)
+
+
+goal_Table=Table(
+    'goals',
+    registry.metadata,
+    Column('goal_id',Integer,primary_key=True),
+    Column('wallet_id',Integer,ForeignKey('wallets.id')),
+    Column('goal_name',String),
+    Column('target_amount',Numeric),
+    Column('target_duration',Integer),
+    Column('purpose',String),
+    Column('created_at',DateTime,default=datetime.now),
+    Column('updated_at',DateTime,default=datetime.now)
+)
+
+
+goal_contribution_table=Table(
+    'goal_contributions',
+    registry.metadata, 
+    Column('goal_contribution_id',Integer,primary_key=True),
+    Column('goal_id',Integer,ForeignKey('goals.goal_id')),
+    Column('contribution_amount',Numeric),
+    Column('contribution_date',DateTime)
+
+)
 
 transaction_table=Table(
     'transactions',
@@ -193,6 +220,36 @@ registry.map_imperatively(
         "transactions": relationship(
             Transaction,
             back_populates="wallet"
+        ),
+        "goals": relationship(
+            Goal,
+            back_populates="wallet",
+            cascade="all, delete-orphan"
+        )
+    }
+)
+
+registry.map_imperatively(
+    Goal,
+    goal_Table,properties={
+        "wallet": relationship(
+            Wallet,
+            back_populates="goals"
+        ),
+        "contributions": relationship(
+            GoalContributions,
+            back_populates="goal",
+            cascade="all, delete-orphan"
+        )
+    })
+
+registry.map_imperatively(
+    GoalContributions,
+    goal_contribution_table,
+    properties={
+        "goal": relationship(
+            Goal,
+            back_populates="contributions"
         )
     }
 )

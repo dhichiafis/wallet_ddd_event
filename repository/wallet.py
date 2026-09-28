@@ -17,3 +17,7 @@ class WalletRepository():
 
     def get_wallet_by_user_id(self,user_id):
         return self.session.query(Wallet).filter(Wallet.user_id==user_id).first()
+
+
+    def get_wallet_goals(self):
+        pass 

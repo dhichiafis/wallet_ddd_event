@@ -1,4 +1,6 @@
 from models.event import *
+
+
 class User:
     def __init__(self,id,username,password,is_active,created_at,updated_at):
         self.id =id
@@ -14,6 +16,17 @@ class User:
                 password=self.password,
                 created_at=self.created_at,
                 updated_at=self.updated_at))
+'''
+
+
+
+class PhoneNumber:
+    def __init__(self):
+        pass
+    
+    def is_phone_number_valid(self):
+        raise ValueError()
+'''
 
 '''
 we are interested in the profile for doing the following one when the profile is created we tehn prompt for pin okay
@@ -60,6 +73,7 @@ class Wallet:
         self.pin =pin  
         self.created_at =created_at
         self.events=[]
+        self.goals=[]
         self.events.append(WalletCreated(
             balance=self.balance,
             pin=self.pin ,
@@ -89,6 +103,45 @@ class Wallet:
             raise ValueError('you must deposit more than 50 shillings')
         self.balance+=amount
 
+    def create_goal(self,goal):
+        self.goals.append(goal)
+
+class Goal:
+    def __init__(self,goal_id,wallet_id,goal_name,target_amount,target_duration,purpose,created_at,updated_at):
+        self.goal_id=goal_id
+        self.wallet_id=wallet_id
+        self.goal_name=goal_name
+        self.target_amount=target_amount 
+        self.target_duration=target_duration
+        self.purpose=purpose
+        self.created_at=created_at
+        self.updated_at=updated_at
+        self.events=[]
+        self.contributions=[]
+
+    def add_daily_contributions(self,contribution):
+        if contribution.contribution_amount <= 0:
+            raise ValueError(
+                "Contribution must be greater than zero"
+            )
+
+        if self.current_amount + contribution.contribution_amount > self.target_amount:
+            raise ValueError(
+                "Contribution would exceed the goal target"
+            )
+
+        self.contributions.append(contribution)
+        
+
+
+class GoalContributions:
+    def __init__(self):
+        self.goal_contribution_id 
+        self.goal_id 
+        self.contribution_amount 
+        self.contribution_date 
+        self.events=[]
+        
 
 class Transfer():
     def __init__(self,id,from_wallet,to_wallet,amount,
