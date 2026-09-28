@@ -128,9 +128,9 @@ def withdrawal_handler(command,uow):
         uow.commit()
         
         return {
-                    "message": "STK push sent",
+                    "message": "b2c",
                     "status": "pending",
-                    "checkout_id": conversation_id
+                   # "checkout_id": conversation_id
                 }
 
 def deposit_to_wallet_handler(command, uow):
