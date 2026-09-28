@@ -578,7 +578,10 @@ def mpesa_callback(message, uow):
     # ------------------------------------------------
     # 13. ONE commit
     # ------------------------------------------------
-
+        print("====== BEFORE COMMIT ======")
+        print("Transaction status:", transaction.status)
+        print("Wallet balance:", wallet.balance)
+        print("===========================")
         uow.commit()
 
         return {
