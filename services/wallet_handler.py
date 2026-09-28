@@ -105,7 +105,7 @@ def withdrawal_handler(command,uow):
         )
         phone_number = str(profile.phonenumber)
         response=disburse_payments(phone_number=phone_number,amount=transaction.amount)
-        
+        print(response)
         result = response.get("Result")
 
         if not result:
