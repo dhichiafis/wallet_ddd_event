@@ -437,6 +437,15 @@ def mpesa_callback(message, uow):
 
         transaction.status = "completed"
         transaction.mpesa_receipt = mpesa_receipt
+        transaction.status = "completed"
+
+        print("====== BEFORE ACCOUNTING ======")
+        print("Transaction:", transaction.id)
+        print("Transaction status:", transaction.status)
+        print("Transaction receipt:", transaction.mpesa_receipt)
+        print("Wallet:", wallet.id)
+        print("Wallet balance:", wallet.balance)
+        print("===============================")
 
     # ------------------------------------------------
     # 8. Get accounting accounts
