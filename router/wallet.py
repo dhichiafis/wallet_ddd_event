@@ -133,6 +133,6 @@ async def process_mpesa_callback(
    
     command=MpesaStkCallBack(
         db=datab,
-        reqs=rep
+        request=rep
     )
     return handle(message=command,uow=uow)
