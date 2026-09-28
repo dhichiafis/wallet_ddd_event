@@ -254,7 +254,7 @@ def process_payment_callback(message,uow):
                 checkout_id=conversation_id
             )
         )
-
+        print(transaction)
         if transaction is None:
             return {
                 "ResultCode": 0,
