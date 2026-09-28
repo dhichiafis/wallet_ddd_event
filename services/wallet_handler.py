@@ -106,33 +106,34 @@ def withdrawal_handler(command,uow):
         phone_number = str(profile.phonenumber)
         response=disburse_payments(phone_number=phone_number,amount=transaction.amount)
         print(response)
-        result = response.get("RespnseCode")
+        result = response.get("ResponseCode")
         print(result)
+        if response_code != "0":
+            raise ValueError(
+                f"B2C request was rejected: {response}"
+            )
 
-        '''
-        if not result:
-                    raise ValueError("Invalid B2C response")
-        
-                if result.get("ResultCode") != 0:
-                    raise ValueError(
-                    f"Disbursement failed: {result}")
-        
-                conversation_id = result.get("ConversationID")
-                if not conversation_id:
-                    raise ValueError(
-                "B2C did not return ConversationID")
-                transaction.checkout_id=conversation_id
-                uow.transrepo.create_transaction(transaction)
-                
-        
-        '''
+        conversation_id = response.get("ConversationID")
+
+        if not conversation_id:
+            raise ValueError(
+                "B2C did not return ConversationID"
+            )
+
+        # This connects the Safaricom callback
+        # to our pending transaction.
+        transaction.checkout_id = conversation_id
+
+        uow.transrepo.create_transaction(transaction)
+
         uow.commit()
-        
+
         return {
-                    "message": "b2c",
-                    "status": "pending",
-                   # "checkout_id": conversation_id
-                }
+            "message": "Withdrawal request submitted",
+            "status": "pending",
+            "checkout_id": conversation_id
+        }
+        
 
 def deposit_to_wallet_handler(command, uow):
 
