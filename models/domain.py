@@ -272,7 +272,7 @@ class Transaction:
         self.description=description
         self.amount=amount 
         self.status=status
-        self.mpesa_receipt=mpesa_reciept #these two fields are useful for audit
+        self.mpesa_reciept=mpesa_reciept #these two fields are useful for audit
         self.checkout_id=checkout_id #now the transaction is asynchronous the user has not enter pin so we have to wait 
         self.created_at=created_at
         self.events=[]
@@ -401,7 +401,7 @@ class LedgerAccountLines:
         self.description =description
         self.debit =debit
         self.credit =credit
-        
+
     def __str__(self):
         return (
             f"LedgerAccountLines("
