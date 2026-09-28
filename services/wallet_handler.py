@@ -192,7 +192,7 @@ def deposit_to_wallet_handler(wallet,uow):
             uow.ledgeraccountrepo.create_ledger(
                 wallet_withdrawable_account
             )
-
+            uow.commit()
             return {'message':'you have deposited money into your account'}
         except Exception as e:
             return HTTPException(
