@@ -244,7 +244,7 @@ def mpesa_callback(message, uow):
 
             transaction.status = "successful"
             transaction.mpesa_receipt = mpesa_receipt
-            transaction.status = "successful"
+            
 
             uow.commit()
             #transaction.mpesa_receipt = transaction_id
