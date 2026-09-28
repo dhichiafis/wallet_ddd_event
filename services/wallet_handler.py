@@ -227,9 +227,29 @@ def mpesa_callback(message, uow):
         # 2. PAYMENT FAILED
         # -----------------------------------------
         if result_code == 0:
+            callback_metadata = stk.get("CallbackMetadata", {})
+            items = callback_metadata.get("Item", [])
+
+            mpesa_receipt = None
+
+            for item in items:
+                if item.get("Name") == "MpesaReceiptNumber":
+                    mpesa_receipt = item.get("Value")
+                break
+
+            print("M-PESA RECEIPT:", mpesa_receipt)
+
+            if not mpesa_receipt:
+                raise ValueError("M-Pesa receipt number not found")
+
             transaction.status = "successful"
+            transaction.mpesa_receipt = mpesa_receipt
+            transaction.status = "successful"
+
+            uow.commit()
             #transaction.mpesa_receipt = transaction_id
         else:
             transaction.status="failed"
+            uow.commit()
 
         return {"ResultCode": 0, "ResultDesc": "Success"}
