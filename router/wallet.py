@@ -56,6 +56,7 @@ async def transfer_to_wallet(
     return handle(command,uow)
 
 @wallet_router.post('/withdraw')
+#@limiter.limit("1440/minute")
 async def withdraw_from_wallet(
     payload:WithdrawFromWalletRequest,
     user:User=Depends(get_current_active_user)
@@ -136,3 +137,5 @@ async def process_mpesa_callback(
         message=command,
         uow=uow
     )
+
+    

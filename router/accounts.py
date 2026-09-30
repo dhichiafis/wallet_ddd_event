@@ -6,10 +6,13 @@ from services.message_bus import *
 from security import *
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
+
+
 from infrastructure.rate_limiter import *
+
 accounts_router=APIRouter(
     prefix='/accounts',
-    tags=['accountss']
+    tags=['accounts']
 )
 
 

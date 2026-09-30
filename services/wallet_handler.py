@@ -533,3 +533,26 @@ def process_payment_callback(message, uow):
                 "ResultCode": 0,
                 "ResultDesc": "Success"
             }
+
+def check_deposit_status(message, uow):
+
+    with uow as uow:
+
+        transaction = uow.transrepo.get_by_checkout_id(
+            checkout_id=message.checkout_id
+        )
+
+        if transaction is None:
+            raise ValueError(
+                f"Transaction not found: {message.checkout_id}"
+            )
+
+        return {
+            "transaction_id": transaction.id,
+            "checkout_id": transaction.checkout_id,
+            "status": transaction.status,
+            "amount": transaction.amount,
+            "mpesa_receipt": transaction.mpesa_reciept,
+        }
+
+    

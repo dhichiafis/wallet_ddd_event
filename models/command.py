@@ -129,3 +129,11 @@ class ContributeToGoal(Command):
     user_id: int
     goal_id: int
     amount: Decimal
+
+
+
+class FetchTransaction(Command):
+    checkout_id:str 
+
+class FetchTransactionRequest(FetchTransaction):
+    pass 

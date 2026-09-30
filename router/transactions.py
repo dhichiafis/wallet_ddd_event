@@ -54,3 +54,13 @@ async def get_transaction_by_wallet(
             "checkout_id":transaction.checkout_id,
             "created_at":transaction.created_at
         }for transaction in transactions]
+
+@transaction_router.get("/deposit/status/{checkout_id}")
+async def check_deposit_status(
+    payload:FetchTransactionRequest,
+):
+    uow = UnitOfWork()
+    command=FetchTransaction(
+        checkout_id=payload.checkout_id
+    )
+    return handle(message=command,uow=uow)

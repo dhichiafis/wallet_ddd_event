@@ -262,6 +262,8 @@ class Transfer():
 
     def __repr__(self):
         return self.__str__()
+
+    
 class Transaction:
     def __init__(self,
     transaction_id,wallet_id,type,description,amount,status
@@ -344,12 +346,15 @@ class JournalEntryLine:
     
         debit,
         credit,
+        created_at
     ):
         self.journalentryline_id = journalentryline_id
         self.wallet_id = wallet_id
         self.account_name = account_name
         self.debit = debit
         self.credit = credit
+        self.created_at=created_at
+        
     def __str__(self):
         return (
             f"JournalEntryLine("
@@ -358,7 +363,7 @@ class JournalEntryLine:
             f"account='{self.account_name}', "
             f"debit={self.debit}, "
             f"credit={self.credit}"
-            f")"
+            f"created_at={self.created_at}"
         )
 
     def __repr__(self):

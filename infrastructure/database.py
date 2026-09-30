@@ -146,7 +146,8 @@ journalentrylines_table=Table(
      Column('debit',Numeric),
      Column('credit',Numeric),
      Column('wallet_id',Integer),
-     Column('account_name',String)
+     Column('account_name',String),
+     Column('created_at',DateTime,nullable=True,default=datetime.now)
 )
 
 ledgeraccount_table=Table(
