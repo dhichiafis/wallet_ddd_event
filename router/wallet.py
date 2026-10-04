@@ -157,7 +157,7 @@ async def get_deposit_status(
         )
 
         return {
-        "transaction_id": transaction.id,
+        "transaction_id": transaction.transaction_id,
         "wallet_id": transaction.wallet_id,
         "type": transaction.type,
         "description": transaction.description,
