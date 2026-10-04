@@ -554,7 +554,7 @@ def check_deposit_status(message, uow):
             )
 
         return {
-            "transaction_id": transaction.id,
+            "transaction_id": transaction.transaction_id,
             "checkout_id": transaction.checkout_id,
             "status": transaction.status,
             "amount": transaction.amount,
