@@ -431,7 +431,8 @@ def process_payment_callback(message, uow):
         wallet_id=wallet.id,
         account_name="Wallet Withdrawable Account",
         debit=transaction.amount,
-        credit=Decimal("0")
+        credit=Decimal("0"),
+        created_at=datetime.now(ZoneInfo('Africa/Nairobi'))
     )
 
             cash_line = JournalEntryLine(
@@ -439,7 +440,9 @@ def process_payment_callback(message, uow):
         wallet_id=wallet.id,
         account_name="Cash Account",
         debit=Decimal("0"),
-        credit=transaction.amount
+        credit=transaction.amount,
+        
+        created_at=datetime.now(ZoneInfo('Africa/Nairobi'))
     )
 
             journal_entry.add_lines(wallet_line)
