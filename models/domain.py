@@ -157,6 +157,12 @@ class Wallet:
 
     def create_goal(self,goal):
         self.goals.append(goal)
+        
+    def can_withdraw(self, amount):
+        if amount <= 0:
+            return False
+
+        return self.balance >= amount
 
     def __str__(self):
         return (

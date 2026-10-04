@@ -90,10 +90,15 @@ def withdrawal_handler(command,uow):
         
         if not profile.phonenumber:
             raise ValueError("Phone number is not registered")
+        
+        if not mywallet.can_withdraw(command.amount):
+            raise ValueError("you have insufficient balance")
+        
+
         transaction = Transaction(
                     transaction_id=None,
                     wallet_id=mywallet.id,
-                    type="deposit",
+                    type="withdrawal",
                     description=f"withdrawal from  wallet {mywallet.id}",
                     amount=command.amount,
                     status="pending",
@@ -104,6 +109,9 @@ def withdrawal_handler(command,uow):
                     )
         )
         phone_number = str(profile.phonenumber)
+
+        
+        mywallet.withdraw(command.amount)
         response=disburse_payments(phone_number=phone_number,amount=transaction.amount)
         print(response)
         result = response.get("ResponseCode")
