@@ -137,3 +137,7 @@ class FetchTransaction(Command):
 
 class FetchTransactionRequest(FetchTransaction):
     pass 
+
+class FetchTransactionByStatus(Command):
+    status:str 
+    

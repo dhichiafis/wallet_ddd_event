@@ -26,3 +26,7 @@ class TransactionRepository:
         .filter(Transaction.checkout_id == checkout_id)
         .first()
     )
+
+    def get_transaction_by_status(self,status):
+        return self.session.query(Transaction).filter(Transaction.status==status).first()
+    

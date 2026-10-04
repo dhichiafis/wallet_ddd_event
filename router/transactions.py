@@ -64,3 +64,14 @@ async def check_deposit_status(
         checkout_id=payload.checkout_id
     )
     return handle(message=command,uow=uow)
+
+
+#@transaction_router.get("/status")
+async def fetch_transaction_by_status(
+    status:str,
+):
+    uow = UnitOfWork()
+    command=FetchTransactionByStatus(
+        status=status
+    )
+    return handle(message=command,uow=uow)
