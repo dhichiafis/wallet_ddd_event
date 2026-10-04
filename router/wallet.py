@@ -137,4 +137,33 @@ async def process_mpesa_callback(
         uow=uow
     )
 
-    
+
+
+@wallet_router.get("/deposit/status/{checkout_id}")
+async def get_deposit_status(
+    checkout_id: str,
+    user: User = Depends(get_current_active_user)
+):
+    uow = UnitOfWork()
+
+    transaction = uow.transrepo.get_by_checkout_id(
+        checkout_id=checkout_id
+    )
+
+    if transaction is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Transaction not found"
+        )
+
+    return {
+        "transaction_id": transaction.id,
+        "wallet_id": transaction.wallet_id,
+        "type": transaction.type,
+        "description": transaction.description,
+        "amount": transaction.amount,
+        "status": transaction.status,
+        "mpesa_receipt": transaction.mpesa_reciept,
+        "checkout_id": transaction.checkout_id,
+        "created_at": transaction.created_at,
+    }
