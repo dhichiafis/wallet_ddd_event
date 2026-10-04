@@ -289,14 +289,19 @@ def mpesa_callback(message, uow):
                 wallet_id=wallet.id,
                 account_name="Cash Account",
                 debit=transaction.amount,
-                credit=Decimal("0"))
+                credit=Decimal("0"),
+                
+                created_at=datetime.now(ZoneInfo('Africa/Nairobi'))
+                )
 
             wallet_line = JournalEntryLine(
                 journalentryline_id=None,
                 wallet_id=wallet.id,
                 account_name="Wallet Withdrawable Account",
                 debit=Decimal("0"),
-                credit=transaction.amount)
+                credit=transaction.amount,
+                created_at=datetime.now(ZoneInfo('Africa/Nairobi'))
+                )
             
             journal_entry.add_lines(cash_line)
             journal_entry.add_lines(wallet_line)
@@ -322,7 +327,9 @@ def mpesa_callback(message, uow):
                 wallet_id=wallet.id,
                 description=f"M-Pesa deposit t{mpesa_receipt} of amount{transaction.amount} ",
                 debit=Decimal("0"),
-                credit=transaction.amount)
+                credit=transaction.amount,
+                
+                )
             print(wallet_ledger_line)
             cash_account.post_to_ledger(cash_ledger_line)
             print(cash_account)
