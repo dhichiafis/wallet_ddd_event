@@ -145,18 +145,18 @@ async def get_deposit_status(
     user: User = Depends(get_current_active_user)
 ):
     uow = UnitOfWork()
-
-    transaction = uow.transrepo.get_by_checkout_id(
+    with uow as uow:
+        transaction = uow.transrepo.get_by_checkout_id(
         checkout_id=checkout_id
     )
 
-    if transaction is None:
-        raise HTTPException(
+        if transaction is None:
+            raise HTTPException(
             status_code=404,
             detail="Transaction not found"
         )
 
-    return {
+        return {
         "transaction_id": transaction.id,
         "wallet_id": transaction.wallet_id,
         "type": transaction.type,
