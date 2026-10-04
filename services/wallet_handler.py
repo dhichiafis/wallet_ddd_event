@@ -290,7 +290,6 @@ def mpesa_callback(message, uow):
                 account_name="Cash Account",
                 debit=transaction.amount,
                 credit=Decimal("0"),
-                
                 created_at=datetime.now(ZoneInfo('Africa/Nairobi'))
                 )
 
