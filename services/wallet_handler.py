@@ -424,7 +424,7 @@ def process_payment_callback(message, uow):
             print("M-PESA RECEIPT:",
                   transaction.mpesa_reciept)
 
-            wallet.withdraw(transaction.amount)
+           # wallet.withdraw(transaction.amount)
 
             print("WALLET BALANCE AFTER:",
                   wallet.balance)
