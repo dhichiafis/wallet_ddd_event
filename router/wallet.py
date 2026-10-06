@@ -66,8 +66,14 @@ async def withdraw_from_wallet(
         amount=payload.amount,
         user_id=user.id
     )
-    return handle(message=command,uow=uow)
-
+    try:
+        return handle(message=command,uow=uow)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+        
 @wallet_router.get('/balance')
 async def get_wallet_balance(
 
