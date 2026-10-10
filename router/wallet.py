@@ -25,6 +25,19 @@ async def create_wallet(
     )
     return handle(message=command,uow=uow)
 
+@wallet_router.post("/verify-pin")
+async def verify_wallet_pin(
+    payload: VerifyWalletPinRequest,
+    user: User = Depends(get_current_active_user)
+):
+    uow = UnitOfWork()
+
+    command=PinCommand(
+        user_id=user.id,
+        pin=payload.pin
+    )
+    return handle(message=command,uow=uow)
+
 
 @wallet_router.post('/deposit')
 async def deposit_to_wallet(
@@ -80,8 +93,14 @@ async def get_wallet_balance(
     db:Session=Depends(connect),
     user:User=Depends(get_current_active_user)):
     wallet=db.query(Wallet).filter(Wallet.user_id==user.id).first()
-    return wallet.balance
+    try:
 
+        return wallet.balance
+    except ValueError as e:
+        raise HTTPException(
+            detail=str(e),
+            status_code=400
+        )
 
 @wallet_router.get('/statements')
 async def get_statements(

@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel,ConfigDict
+from pydantic import BaseModel,ConfigDict, Field
 from decimal import Decimal
 from sqlalchemy.orm import Session
 from fastapi import Request 
@@ -11,6 +11,32 @@ class Command(BaseModel):
 """
 for the amount well be using decimal which is stored in the database as numeric otherwise using a float gives a mismatch
 """
+
+
+
+class PinCommand(Command):
+    user_id:int 
+    pin:str 
+    
+
+class VerifyWalletPinRequest(BaseModel):
+    pin: str = Field(
+        ...,
+        min_length=4,
+        max_length=4,
+        pattern=r"^\d+$"
+    )
+
+
+class WithdrawFromWalletRequest(BaseModel):
+    amount: Decimal = Field(..., gt=0)
+    pin: str = Field(
+        ...,
+        min_length=4,
+        max_length=4,
+        pattern=r"^\d+$"
+    )
+
 class RegisterUser(Command):
     username:str 
     password:str 

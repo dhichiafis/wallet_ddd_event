@@ -225,6 +225,26 @@ def authorize_wallet_transfer_handler(command,uow):
         #verify pin 
         pass 
 
+def verify_wallet_pin_handler(command, uow):
+    with uow as uow:
+        wallet = uow.walletrepo.get_wallet_by_user_id(
+            user_id=command.user_id
+        )
+
+        if wallet is None:
+            raise ValueError("Wallet does not exist")
+
+        if not wallet.pin:
+            raise ValueError("Wallet PIN has not been configured")
+
+        if not verify_pin(command.pin, wallet.pin):
+            raise ValueError("Incorrect wallet PIN")
+
+        return {
+            "message": "PIN verified successfully",
+            "valid": True
+        }
+
 def get_wallet_statements(wallet,uow):
     with uow as uow:
         pass 
