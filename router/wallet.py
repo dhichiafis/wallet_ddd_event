@@ -36,8 +36,13 @@ async def verify_wallet_pin(
         user_id=user.id,
         pin=payload.pin
     )
-    return handle(message=command,uow=uow)
-
+    try:
+        return handle(message=command,uow=uow)
+    except ValueError as e:
+        raise HTTPException(
+            detail=str(e),
+            status_code=400
+        )
 
 @wallet_router.post('/deposit')
 async def deposit_to_wallet(

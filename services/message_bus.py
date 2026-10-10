@@ -19,7 +19,7 @@ COMMANDS={
     WithdrawFromWallet:withdrawal_handler,
     #CreateTransfer:tranfer_to_wallet_handler,
     #WithdrawFromWalletRequest:withdrawal_handler,
-    
+    PinCommand:verify_wallet_pin_handler,
     GetAllUser:get_all_users_handler,
     TransactionPaymentCallback:process_payment_callback,
     MpesaStkCallBack:mpesa_callback,
