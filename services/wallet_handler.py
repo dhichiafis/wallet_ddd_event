@@ -111,7 +111,8 @@ def withdrawal_handler(command,uow):
         phone_number = str(profile.phonenumber)
 
         
-        mywallet.withdraw(command.amount)
+        #mywallet.withdraw(command.amount)
+        mywallet.withdraw(20)
         response=disburse_payments(phone_number=phone_number,amount=transaction.amount)
         print(response)
         result = response.get("ResponseCode")
